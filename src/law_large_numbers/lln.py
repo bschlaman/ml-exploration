@@ -2,6 +2,7 @@ import random
 from colorama import Fore
 import logging
 from statistics import mean
+from utils.helpers import compact_repr
 
 log = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ def lln_convergence():
     while abs(ev - mean(outcomes or [float("inf")])) > target_delta:
         outcomes.append(random.choice(distribution))
         log.info(f"{Fore.BLUE}expected val{Fore.RESET}:    {ev}")
-        log.info(f"{Fore.BLUE}outcomes{Fore.RESET}:        {outcomes}")
+        log.info(f"{Fore.BLUE}outcomes{Fore.RESET}:        {compact_repr(outcomes)}")
         log.info(f"{Fore.BLUE}outcomes (mean){Fore.RESET}: {mean(outcomes):.2f}")
         log.info(
             f"{Fore.BLUE}delta{Fore.RESET}:           {abs(ev - mean(outcomes)):.2f}"
