@@ -5,7 +5,11 @@ from colorama import Fore
 log = logging.getLogger(__name__)
 
 
-def minkowski():
+def curse_of_dimensionality(p1: tuple[int], p2: tuple[int], d: int) -> int:
+    pass
+
+
+def minkowski() -> None:
     p1, p2 = (3, 5), (6, -1)
 
     p = 2
