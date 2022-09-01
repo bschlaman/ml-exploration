@@ -3,14 +3,18 @@
 # learning tool with these functions
 
 
-def minkowski_distance(
+def minkowski_distance(p1: tuple[float], p2: tuple[float], p: int) -> float:
     # TODO: (2022.08.29) show Chebyshev distance, i.e. p = ∞
-    x_coords: tuple[float],
-    y_coords: tuple[float],
-    p: int = 2,
-) -> float:
-    dimensionality = min(len(x_coords), len(y_coords))
+    dimensionality = min(len(p1), len(p2))
     total = 0
     for n in range(dimensionality):
-        total += pow(abs(x_coords[n] - y_coords[n]), p)
+        total += pow(abs(p1[n] - p2[n]), p)
     return pow(total, 1 / p)
+
+
+def euclidean_distance(p1: tuple[float], p2: tuple[float], p: int = 2) -> float:
+    return minkowski_distance(p1, p2, 2)
+
+
+def manhattan_distance(p1: tuple[float], p2: tuple[float], p: int = 2) -> float:
+    return minkowski_distance(p1, p2, 1)

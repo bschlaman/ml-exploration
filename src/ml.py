@@ -14,9 +14,9 @@ log = logging.getLogger(__name__)
 def main():
     log.info(f"{Fore.BLUE}Welcome to the ml module{Fore.RESET}")
     log.info(f"starting expected value convergence test...")
-    lln.lln_convergence()
-    log.info(f"starting k nearest neighbors minkowski distance test...")
-    knn.minkowski()
+    # lln.lln_convergence()
+    log.info(f"starting curse of dimensionality test...")
+    knn.curse_of_dimensionality()
 
 
 if __name__ == "__main__":
