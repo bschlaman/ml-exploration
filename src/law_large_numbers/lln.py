@@ -2,7 +2,7 @@ import random
 from colorama import Fore
 import logging
 from statistics import mean
-from utils.helpers import compact_repr
+from utils.helpers import compact_repr, data_print
 
 log = logging.getLogger(__name__)
 
@@ -19,14 +19,20 @@ def lln_convergence():
     outcomes = []
     ev = expected_value(distribution)
     target_delta = 0.1
-    log.info(f"{Fore.YELLOW}distribution{Fore.RESET}: {distribution}")
-    log.info(f"{Fore.YELLOW}target delta{Fore.RESET}: {target_delta}")
+    labeled_data = {
+        "distribution": distribution,
+        "target delta": target_delta,
+    }
+    for line in data_print(labeled_data, Fore.YELLOW):
+        log.info(line)
     while abs(ev - mean(outcomes or [float("inf")])) > target_delta:
         outcomes.append(random.choice(distribution))
-        log.info(f"{Fore.BLUE}expected val{Fore.RESET}:    {ev}")
-        log.info(f"{Fore.BLUE}outcomes{Fore.RESET}:        {compact_repr(outcomes)}")
-        log.info(f"{Fore.BLUE}outcomes (mean){Fore.RESET}: {mean(outcomes):.2f}")
-        log.info(
-            f"{Fore.BLUE}delta{Fore.RESET}:           {abs(ev - mean(outcomes)):.2f}"
-        )
+        labeled_data = {
+            "expected val": ev,
+            "outcomes": compact_repr(outcomes),
+            "outcomes (mean)": mean(outcomes),
+            "delta": abs(ev - mean(outcomes)),
+        }
+        for line in data_print(labeled_data, Fore.BLUE):
+            log.info(line)
         input("press a key to continue")
