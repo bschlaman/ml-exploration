@@ -4,7 +4,8 @@ import logging
 import random
 from colorama import Fore
 from statistics import mean
-from itertools import combinations
+from itertools import combinations, chain
+from math import sqrt
 
 log = logging.getLogger(__name__)
 
@@ -26,17 +27,19 @@ def curse_of_dimensionality() -> None:
     """Plot 100 points randomly and find the average distance
     both to the origin, and to all the other points"""
     num_points = 100
-    for d in range(1, 10):
+    max_coord = 100
+    for d in chain(range(1, 5), range(96, 100)):
         labeled_data = {
             "dimensionality": f"{d=}",
             "num points": num_points,
+            "coord range": str([-max_coord, max_coord]),  # brackets notation
         }
         for line in data_print(labeled_data, Fore.YELLOW):
             log.info(line)
 
         origin = tuple(0 for _ in range(d))
         points = tuple(
-            tuple(random.randrange(-99, 100) for _ in range(d))
+            tuple(random.randrange(-max_coord, max_coord + 1) for _ in range(d))
             for _ in range(num_points)
         )
         avg_dist_to_origin = mean(
@@ -51,6 +54,29 @@ def curse_of_dimensionality() -> None:
             "avg dist pairwise": avg_dist_pairwise,
         }
         for line in data_print(labeled_data, Fore.BLUE):
+            log.info(line)
+
+        # compare the closest and farthest points from p0
+        # in the future, I could also track the variance in distances
+        # or plot a histogram of the distances to show they converge
+        # arount a certain value
+        p0 = points[0]
+        closest_neighbor = min(points[1:], key=lambda p: euclidean_distance(p0, p))
+        farthest_neighbor = max(points[1:], key=lambda p: euclidean_distance(p0, p))
+        closest_neighbor_dist = euclidean_distance(p0, closest_neighbor)
+        farthest_neighbor_dist = euclidean_distance(p0, farthest_neighbor)
+        max_possible_distance = 2 * sqrt(d * (max_coord**2))
+        labeled_data = {
+            "point chosen": compact_repr(p0),
+            "dist to closest neighbor": closest_neighbor_dist,
+            "dist to farthest neighbor": farthest_neighbor_dist,
+            "max possible distance": max_possible_distance,
+            "farthest and nearest differential": (
+                farthest_neighbor_dist - closest_neighbor_dist
+            )
+            / max_possible_distance,
+        }
+        for line in data_print(labeled_data, Fore.MAGENTA):
             log.info(line)
 
 
