@@ -29,7 +29,8 @@ class Vector2D:
         self.y = y
 
     def __str__(self):
-        return str([self.x, self.y])
+        fp_precision = 5
+        return str([round(self.x, 5), round(self.y, 5)])
 
     def magnitude(self):
         return math.sqrt(self.x**2 + self.y**2)

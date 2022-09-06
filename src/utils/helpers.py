@@ -22,5 +22,5 @@ def data_print(labeled_data: dict[str, Any], ansi_color: str) -> Iterable[str]:
     total_len = longest_label_len + len(ansi_color + Fore.RESET)
     for label, data in labeled_data.items():
         if isinstance(data, float):
-            data = round(data, 4)
+            data = round(data, 5)
         yield f"{_apply_color(str(label))}:".ljust(total_len + 2) + str(data)
