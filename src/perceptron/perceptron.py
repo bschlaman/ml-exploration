@@ -47,6 +47,10 @@ def init_dataset():
 
 
 def perceptron2D():
+    # perceptron assumptions:
+    # 1) Binary classification (i.e. yi∈{−1,+1})
+    # 2) Data is linearly separable
+
     data = init_dataset()
     w = Vector2D(0, 0)
     while True:

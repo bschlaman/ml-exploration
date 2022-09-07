@@ -1,5 +1,6 @@
 # this file is for utilities that are not important to the topic at hand,
 # and are merely convenience functions
+from __future__ import annotations
 from typing import Iterable, Any
 from colorama import Fore
 

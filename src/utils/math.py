@@ -1,6 +1,7 @@
 # this file is used for mathematical utilities that I want to see represented
 # as code.  there may be libraries for them, but I want to bootstrap a working
 # learning tool with these functions
+from __future__ import annotations
 import math
 
 
@@ -9,7 +10,7 @@ def minkowski_distance(p1: tuple[float], p2: tuple[float], p: int) -> float:
     dimensionality = min(len(p1), len(p2))
     total = 0
     for n in range(dimensionality):
-        total += pow(abs(p1[n] - p2[n]), p)
+        total += pow(math.fabs(p1[n] - p2[n]), p)
     return pow(total, 1 / p)
 
 
@@ -53,6 +54,14 @@ class Vector2D:
             raise TypeError
         self.x += other.x
         self.y += other.y
+        return self
+
+    def sub(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError
+        self.x -= other.x
+        self.y -= other.y
+        return self
 
     def dot_product(self, other):
         if not isinstance(other, self.__class__):
