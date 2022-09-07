@@ -1,9 +1,10 @@
 from matplotlib import pyplot as plt
+from matplotlib.patches import Circle
 import numpy as np
-from utils.math import Vector2D
 import random
-from utils.helpers import data_print
 from colorama import Fore
+from utils.math import Vector2D
+from utils.helpers import data_print
 
 
 def update_plot(vector):
@@ -19,8 +20,12 @@ def update_plot(vector):
     # update section fills
     pos_fill.remove()
     neg_fill.remove()
-    pos_fill = ax.fill_between(x, y, int(w.y > 0), facecolor="b", alpha=0.2)
-    neg_fill = ax.fill_between(x, y, int(w.y < 0), facecolor="r", alpha=0.2)
+    pos_fill = ax.fill_between(
+        x, y.tolist(), PLOT_VIEWPORT[int(w.y > 0)], facecolor="b", alpha=0.2
+    )
+    neg_fill = ax.fill_between(
+        x, y.tolist(), PLOT_VIEWPORT[int(w.y < 0)], facecolor="r", alpha=0.2
+    )
     # update text
     text.set_text(f"magnitude of w: {round(w.magnitude(), 5)}")
     ax.figure.canvas.draw()
@@ -44,12 +49,13 @@ class FeaturePlotter:
 
 GLOBAL_VECTOR_OFFSET = (0.4, 0.4)
 gvo_vec = Vector2D(*GLOBAL_VECTOR_OFFSET)
+PLOT_VIEWPORT = (-0.5, 1)
 
 # initialize the figure, plots, and feature plotters
 fig, ax = plt.subplots()
 ax.set_title("Perceptron Feature Plotter\n(click to add points, hold shift for red)")
-ax.set_xlim(0, 1)
-ax.set_ylim(0, 1)
+ax.set_xlim(*PLOT_VIEWPORT)
+ax.set_ylim(*PLOT_VIEWPORT)
 ax.set_aspect("equal")
 ax.autoscale(False)
 plot1 = ax.scatter([], [], color="b", marker="o")
@@ -57,8 +63,8 @@ plot2 = ax.scatter([], [], color="r", marker="o")
 fp1 = FeaturePlotter(plot1, None)
 fp2 = FeaturePlotter(plot2, "shift")
 # reusable linear space
-x = np.linspace(0, 1)
-circle = plt.Circle((0, 0), 0.03, fill=False, color="g", label="test point")
+x = np.linspace(*PLOT_VIEWPORT)
+circle = Circle((0, 0), 0.03, fill=False, color="g", label="test point")
 ax.add_patch(circle)
 
 
@@ -76,16 +82,20 @@ y = w_vector_slope_rot * (x - gvo_vec.x) + gvo_vec.y
 (hyperplane_plot,) = ax.plot(x, y, ":g")
 
 # section filling
-pos_fill = ax.fill_between(x, y, int(w.y > 0), facecolor="b", alpha=0.2)
-neg_fill = ax.fill_between(x, y, int(w.y < 0), facecolor="r", alpha=0.2)
+pos_fill = ax.fill_between(
+    x, y.tolist(), PLOT_VIEWPORT[int(w.y > 0)], facecolor="b", alpha=0.2
+)
+neg_fill = ax.fill_between(
+    x, y.tolist(), PLOT_VIEWPORT[int(w.y < 0)], facecolor="r", alpha=0.2
+)
 
 # text
 text = ax.text(0.02, 0.02, f"magnitude of w\u20D7: {round(w.magnitude(), 5)}")
 
 # data will be of the form ((x, y), label)
 data = []
-data.extend([(Vector2D(x, y), 1) for x, y in plot1.get_offsets()])
-data.extend([(Vector2D(x, y), -1) for x, y in plot2.get_offsets()])
+data.extend([(Vector2D(x, y).sub(gvo_vec), 1) for x, y in plot1.get_offsets()])
+data.extend([(Vector2D(x, y).sub(gvo_vec), -1) for x, y in plot2.get_offsets()])
 random.shuffle(data)
 
 
@@ -93,11 +103,10 @@ def perceptron():
     misses = 0
     for vec, label in data:
         miss = False
-        circle.center = vec.x, vec.y
+        circle.center = vec.x + gvo_vec.x, vec.y + gvo_vec.y
         ax.figure.canvas.draw()
         if label * w.dot_product(vec) <= 0:
             misses += 1
-            print("miss! adjusting w\u20D7")
             vec.scale(label)
             # w.add(vec)
             miss = True
