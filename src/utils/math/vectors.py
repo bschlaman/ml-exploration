@@ -1,5 +1,87 @@
 from __future__ import annotations
 import math
+from typing import Sequence
+from utils.helpers import compact_repr
+
+
+class Vector:
+    cartesian_notation_map = {
+        "x": 0,
+        "y": 1,
+        "z": 2,
+        "w": 3,
+    }
+
+    def __init__(self, components: Sequence):
+        if not components:
+            raise Exception
+        self.components = components
+
+    def __str__(self):
+        return compact_repr(list(self.components))
+
+    def magnitude(self):
+        return math.sqrt(sum(map(lambda _: _**2, self.components)))
+
+    def normalize(self):
+        mag = self.magnitude()
+        for i in range(len(self.components)):
+            self.components[i] /= mag
+
+    def scale(self, scalar: float):
+        for i in len(self.components):
+            self.components[i] *= mag
+
+    def add(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError
+        for i, c in enumerate(other.components):
+            if i < len(self.components):
+                self.components[i] += c
+            else:
+                self.components.append(c)
+
+    def sub(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError
+        for i, c in enumerate(other.components):
+            if i < len(self.components):
+                self.components[i] -= c
+            else:
+                self.components.append(-c)
+
+    def dot_product(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError
+        lesser_dimensionality = min(len(self.components), len(other.components))
+        return sum(
+            self.components[i] * other.components[i]
+            for i in range(lesser_dimensionality)
+        )
+
+    # TODO (2022.09.07) I am currently undecided on what I want the behavior to be for components that
+    # are missing.  Should I simply default to 0, or is dimensionality completely fixed at
+    # instantiation?  If that's the case, should I even allow adding vectors with different
+    # dimensionalities?
+    def __getattr__(self, attr):
+        if attr not in cartesian_notation_map:
+            raise Exception(
+                f"invalid component: {attr}, choose from {','.join(cartesian_notation_map.keys())}"
+            )
+        if cartesian_notation_map[attr] >= len(self.components):
+            raise Exception(f"component dimensionality too high: {attr}")
+        return self.components[cartesian_notation_map[attr]]
+
+    def __setattr__(self, attr, val):
+        if attr not in cartesian_notation_map:
+            raise Exception(
+                f"invalid component: {attr}, choose from {','.join(cartesian_notation_map.keys())}"
+            )
+        if cartesian_notation_map[attr] >= len(self.components):
+            raise Exception(f"component dimensionality too high: {attr}")
+        if self.components and type(val) != type(self.components[0]):
+            raise TypeError
+        self.components[cartesian_notation_map[attr]] = val
 
 
 class Vector2D:
