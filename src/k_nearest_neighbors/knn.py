@@ -1,4 +1,4 @@
-from utils.math import minkowski_distance, euclidean_distance
+from utils.math.distance import minkowski_distance, euclidean_distance
 from utils.helpers import compact_repr, data_print
 import logging
 import random

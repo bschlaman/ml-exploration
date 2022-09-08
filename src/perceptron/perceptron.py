@@ -1,4 +1,4 @@
-from utils.math import Vector2D
+from utils.math.vectors import Vector2D
 from utils.helpers import data_print
 from colorama import Fore
 import logging
