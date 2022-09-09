@@ -1,24 +1,23 @@
 from __future__ import annotations
 import math
-from typing import Sequence
 from utils.helpers import compact_repr
 
 
 class Vector:
-    cartesian_notation_map = {
+    CARTESIAN_NOTATION_MAP = {
         "x": 0,
         "y": 1,
         "z": 2,
         "w": 3,
     }
 
-    def __init__(self, components: Sequence):
+    def __init__(self, *components: float):
         if not components:
             raise Exception
-        self.components = components
+        self.__dict__["components"] = list(components)
 
     def __str__(self):
-        return compact_repr(list(self.components))
+        return compact_repr(self.components)
 
     def magnitude(self):
         return math.sqrt(sum(map(lambda _: _**2, self.components)))
@@ -29,8 +28,8 @@ class Vector:
             self.components[i] /= mag
 
     def scale(self, scalar: float):
-        for i in len(self.components):
-            self.components[i] *= mag
+        for comp in self.components:
+            comp *= scalar
 
     def add(self, other):
         if not isinstance(other, self.__class__):
@@ -64,24 +63,27 @@ class Vector:
     # instantiation?  If that's the case, should I even allow adding vectors with different
     # dimensionalities?
     def __getattr__(self, attr):
-        if attr not in cartesian_notation_map:
-            raise Exception(
-                f"invalid component: {attr}, choose from {','.join(cartesian_notation_map.keys())}"
+        if attr not in self.__class__.CARTESIAN_NOTATION_MAP:
+            raise AttributeError(
+                f"invalid component: {attr}, choose from"
+                f" {','.join(self.__class__.CARTESIAN_NOTATION_MAP.keys())}"
             )
-        if cartesian_notation_map[attr] >= len(self.components):
-            raise Exception(f"component dimensionality too high: {attr}")
-        return self.components[cartesian_notation_map[attr]]
+        if self.__class__.CARTESIAN_NOTATION_MAP[attr] >= len(self.components):
+            raise AttributeError(f"component dimensionality too high: {attr}")
+        return self.components[self.__class__.CARTESIAN_NOTATION_MAP[attr]]
+        # return getattr(self.component, attr)
 
     def __setattr__(self, attr, val):
-        if attr not in cartesian_notation_map:
-            raise Exception(
-                f"invalid component: {attr}, choose from {','.join(cartesian_notation_map.keys())}"
+        if attr not in self.__class__.CARTESIAN_NOTATION_MAP:
+            raise AttributeError(
+                f"invalid component: {attr}, choose from"
+                f" {','.join(self.__class__.CARTESIAN_NOTATION_MAP.keys())}"
             )
-        if cartesian_notation_map[attr] >= len(self.components):
-            raise Exception(f"component dimensionality too high: {attr}")
+        if self.__class__.CARTESIAN_NOTATION_MAP[attr] >= len(self.components):
+            raise AttributeError(f"component dimensionality too high: {attr}")
         if self.components and type(val) != type(self.components[0]):
             raise TypeError
-        self.components[cartesian_notation_map[attr]] = val
+        self.components[self.__class__.CARTESIAN_NOTATION_MAP[attr]] = val
 
 
 class Vector2D:
