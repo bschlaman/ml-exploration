@@ -28,8 +28,8 @@ class Vector:
             self.components[i] /= mag
 
     def scale(self, scalar: float):
-        for comp in self.components:
-            comp *= scalar
+        for _ in range(len(self.components)):
+            self.components[_] *= scalar
 
     def add(self, other):
         if not isinstance(other, self.__class__):
