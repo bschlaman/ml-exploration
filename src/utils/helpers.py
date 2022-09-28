@@ -2,7 +2,7 @@
 # and are merely convenience functions
 from __future__ import annotations
 from typing import Iterable, Any
-from colorama import Fore
+from colorama import ansi, Fore
 
 
 def compact_repr(target: list, length: int = 5) -> str:
@@ -15,7 +15,7 @@ def compact_repr(target: list, length: int = 5) -> str:
     )
 
 
-def data_print(labeled_data: dict[str, Any], ansi_color: str) -> Iterable[str]:
+def data_print(labeled_data: dict[str, Any], ansi_color: ansi.AnsiFore) -> Iterable[str]:
     def _apply_color(s: str) -> str:
         return f"{ansi_color}{s}{Fore.RESET}"
 
