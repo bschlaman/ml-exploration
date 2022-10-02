@@ -10,9 +10,10 @@ The purpose of this repository is to hold test files and POCs as I learn about M
   - Generative learning: estimate `P(X,Y) = P(X|Y)P(Y)`
   - Discriminative learning: only estimate `P(Y|X)` directly (most approaches today are discriminative)
   - note that if I know `P(Y|X)`, prediction is trivial.  Simply input X, and test Y to find `max(P(Y|X))`
-- Maximum Likelihood Estimation (MLE): `θ^MLE=argmaxθP(D;θ)`
-- Maximum a Posteriori Probability Estimation (MAP): `θ^MAP=argmaxθP(θ∣D)`
+- Maximum Likelihood Estimation (MLE): `θ_MLE=argmaxθ[P(D;θ)]`
+- Maximum a Posteriori Probability Estimation (MAP): `θ_MAP=argmaxθ[P(θ∣D)]`
 - Beyesian vs frequentist statistics
+- Naive Bayes (`argmax_y[P(y)sum(log(P(x_α|y)))]`) is especially useful in instances where the dimensions of the feature are truly independent, like when there is a _causal relationship_ between the label and feature components.  For example, symptoms which are caused by the label y which is having the disease or not.
 
 ## Some notational stuff
 - `|` vs `;`
