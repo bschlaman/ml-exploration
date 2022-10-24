@@ -8,4 +8,4 @@ def choose(n: int, x: int) -> int:
     """Combinatorics 'choose' formula"""
     num_ordered_arrangements = math.factorial(n) / math.factorial(n - x)
     num_unordered_arrangements = num_ordered_arrangements // math.factorial(x)
-    return num_unordered_arrangements
+    return int(num_unordered_arrangements)
