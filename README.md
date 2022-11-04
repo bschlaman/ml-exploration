@@ -30,3 +30,9 @@ The purpose of this repository is to hold test files and POCs as I learn about M
 - So we _estimate_ P with a distribution we understand, say P_θ with parameters θ.  There are two methods to do this, MLE & MAP
   - MLE maximizes the likelihood of getting the data we observed: `θ^MLE=argmaxθP(D;θ)`
   - MAP says given that we observed the data, what is the most likely θ: `θ^MLE=argmaxθP(D;θ)`.  There is no sample space for θ, but that shouldn't stop us from finding the Prior Distribution `P(θ)`. `P(y|X=x) = ∫_θ P(y|θ)P(θ|D)dθ`
+
+## Real world problem
+### Problem statement
+Given the words in the title of one of my todo app stories, classify it as belonging to one of my tags.
+`Y ∈ {work, chess engine, music practice, todo app, life, research}`
+`P(Y = work task | X = "draft design doc for API")`
