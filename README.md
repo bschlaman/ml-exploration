@@ -31,6 +31,9 @@ The purpose of this repository is to hold test files and POCs as I learn about M
   - MLE maximizes the likelihood of getting the data we observed: `θ^MLE=argmaxθP(D;θ)`
   - MAP says given that we observed the data, what is the most likely θ: `θ^MLE=argmaxθP(D;θ)`.  There is no sample space for θ, but that shouldn't stop us from finding the Prior Distribution `P(θ)`. `P(y|X=x) = ∫_θ P(y|θ)P(θ|D)dθ`
 
+## Continuous features (as opposed to categorical)
+In the case of data with continuous features, a decent estimator for the probability distribution of a particular feature may be a gaussian distribution with parameters μ and σ^2.  These parameters can be calculated easily (see 33:50 in Lecture 10) from the data set for use in MLE.  The analog for categorial features is parameter θ in a binomial or multinomial distribution.
+
 ## Real world problem
 ### Problem statement
 Given the words in the title of one of my todo app stories, classify it as belonging to one of my tags.
