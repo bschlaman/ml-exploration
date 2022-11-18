@@ -34,6 +34,12 @@ The purpose of this repository is to hold test files and POCs as I learn about M
 ## Continuous features (as opposed to categorical)
 In the case of data with continuous features, a decent estimator for the probability distribution of a particular feature may be a gaussian distribution with parameters μ and σ^2.  These parameters can be calculated easily (see 33:50 in Lecture 10) from the data set for use in MLE.  The analog for categorial features is parameter θ in a binomial or multinomial distribution.
 
+## Logistic Algorithm
+The key difference between naive Bayes and the Perceptron is that naive Bayes first models the data and then throws it out, operating only off of the distributions `P(X|Y)`.  Perceptron performs repeated calculation on the data itself.
+Naive Bayes is also a linear classifier, both in the case of multinomial and gausian distributions.  Demo idea: take a generic data set and an interface for a linear classifier and make the two algorithms compete.
+The Logistic Algorithm is the discriminative counterpart to Naive Bayes.  Instead of estimating the distributions, estimate `(w, b)` directly.
+Start with the assumption that `P(Y|X) = 1/(1+e^(wTx))`, and use MLE to find the parameters `(w, b)`.  -> `argmax[w,b]ΠiP(yi|x;w,b)`
+
 ## Real world problem
 ### Problem statement
 Given the words in the title of one of my todo app stories, classify it as belonging to one of my tags.
