@@ -13,7 +13,7 @@ class Vector:
 
     def __init__(self, *components: float):
         if not components:
-            raise Exception
+            raise Exception("must supply components")
         self.__dict__["components"] = list(components)
 
     def __str__(self):

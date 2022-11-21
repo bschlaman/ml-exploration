@@ -45,3 +45,14 @@ Start with the assumption that `P(Y|X) = 1/(1+e^(wTx))`, and use MLE to find the
 Given the words in the title of one of my todo app stories, classify it as belonging to one of my tags.
 `Y ∈ {work, chess engine, music practice, todo app, life, research}`
 `P(Y = work task | X = "draft design doc for API")`
+
+
+I want to build a framework that tries out the 3 classifiers I know about so far
+- k-nearest-neighbors
+- Perceptron
+- Naive Bayes
+
+Requirements
+- common interface
+- should allow for smoothing
+- in the case of perceptron, catch an infinite loop
