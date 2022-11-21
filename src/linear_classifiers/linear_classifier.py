@@ -1,19 +1,29 @@
 from abc import ABC, abstractmethod
 import collections
 import random
+import itertools
+import logging
+from colorama import Fore
 
 from utils.math.vectors import Vector
-from linear_classifiers.data_generator import data_iter, get_data_stats
+from utils.helpers import data_print
+from linear_classifiers.data_generator import data_iter
+
+
+log = logging.getLogger(__name__)
 
 
 def transform_raw_data(raw_data: list[dict[str, str]]) -> tuple[list[str], bool]:
     """Convert raw data into the format the classifiers expect"""
     label_key = "real"
     features_key = "title"
-    data = []
-    for rd in raw_data:
-        data.append((rd[features_key].split(), bool(rd[label_key])))
-    return data
+
+    def _conv_xy(d):
+        x, y = d
+        words = list(map(lambda w: "".join(filter(str.isalnum, w)), x.lower().split()))
+        return (words, bool(int(y)))
+
+    return map(_conv_xy, ((rd[features_key], rd[label_key]) for rd in raw_data))
 
 
 class LinearClassifier(ABC):
@@ -39,12 +49,27 @@ class LinearClassifier(ABC):
         """
         pass
 
+    def get_unique_words(self) -> set[str]:
+        return set(itertools.chain(*(_[0].keys() for _ in self.data)))
+
+    def log_data_stats(self):
+        num_unique_words = len(self.get_unique_words())
+        label_counts = collections.Counter((_[1] for _ in self.data))
+        labeled_data = {
+            "num datapoints": len(self.data),
+            "label counts": label_counts,
+            "num unique words": num_unique_words,
+            "P(y = true)": label_counts[True] / len(self.data),
+            "P(y = false)": label_counts[False] / len(self.data),
+        }
+        for line in data_print(labeled_data, Fore.YELLOW):
+            log.info(line)
+
 
 class NaiveBayesClassifier(LinearClassifier):
     def __init__(self):
-        get_data_stats()
-        raw_data = list(data_iter())[:10]
-        super().__init__(transform_raw_data(raw_data))
+        raw_data = list(data_iter())
+        super().__init__(list(transform_raw_data(raw_data)))
 
     def calculate_parameter(self, c: int, alpha: str) -> float:
         """Estimate θ^_αc for a generative algorithm with
