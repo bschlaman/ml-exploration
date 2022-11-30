@@ -40,6 +40,8 @@ Naive Bayes is also a linear classifier, both in the case of multinomial and gau
 The Logistic Algorithm is the discriminative counterpart to Naive Bayes.  Instead of estimating the distributions, estimate `(w, b)` directly.
 Start with the assumption that `P(Y|X) = 1/(1+e^(wTx))`, and use MLE to find the parameters `(w, b)`.  -> `argmax[w,b]ΠiP(yi|x;w,b)`
 
+Naive Bayes works well when you have very few data points, because you bring a gaussian assumption to the model to reduce the hyperplane search space.  When you have many data points, logistic regression is preferable.  (lec 12 min 7)
+
 ## Real world problem
 ### Problem statement
 Given the words in the title of one of my todo app stories, classify it as belonging to one of my tags.

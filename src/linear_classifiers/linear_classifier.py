@@ -86,3 +86,9 @@ class NaiveBayesClassifier(LinearClassifier):
                 continue
             alpha_count += features[alpha]
         return alpha_count / word_count
+
+
+class KNearestNeighbors(LinearClassifier):
+    def __init__(self):
+        raw_data = list(data_iter())
+        super().__init__(list(transform_raw_data(raw_data)))
