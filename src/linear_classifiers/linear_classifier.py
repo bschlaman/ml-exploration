@@ -21,7 +21,12 @@ def transform_raw_data(raw_data: list[dict[str, str]]) -> tuple[list[str], bool]
 
     def _conv_xy(d):
         x, y = d
-        words = list(map(lambda w: "".join(filter(str.isalnum, w)), x.lower().split()))
+        words = list(
+            # word after non alnum char extraction must not be empty
+            filter(
+                bool, map(lambda w: "".join(filter(str.isalnum, w)), x.lower().split())
+            )
+        )
         return (words, bool(int(y)))
 
     return map(_conv_xy, ((rd[features_key], rd[label_key]) for rd in raw_data))
@@ -35,6 +40,9 @@ class LinearClassifier(ABC):
         self.m = 6  # number of words per datum
         for features, label in data:
             self.data.append((self._sample_features(features), label))
+
+        self.training_data = self.data[:7000]
+        self.test_data = self.data[7000:]
 
     def _sample_features(self, features: list[str]) -> collections.Counter:
         """Convert raw data into feature vectors that can be operated on"""
@@ -51,20 +59,20 @@ class LinearClassifier(ABC):
         pass
 
     def get_unique_words(self) -> set[str]:
-        return set(itertools.chain(*(_[0].keys() for _ in self.data)))
+        return set(itertools.chain(*(_[0].keys() for _ in self.training_data)))
 
     def get_unique_labels(self) -> set[bool]:
-        return set(_[1] for _ in self.data)
+        return set(_[1] for _ in self.training_data)
 
     def log_data_stats(self):
         num_unique_words = len(self.get_unique_words())
-        label_counts = collections.Counter((_[1] for _ in self.data))
+        label_counts = collections.Counter((_[1] for _ in self.training_data))
         labeled_data = {
-            "num datapoints": len(self.data),
+            "num datapoints": len(self.training_data),
             "label counts": label_counts,
             "num unique words": num_unique_words,
-            "P(y = true)": label_counts[True] / len(self.data),
-            "P(y = false)": label_counts[False] / len(self.data),
+            "P(y = true)": label_counts[True] / len(self.training_data),
+            "P(y = false)": label_counts[False] / len(self.training_data),
         }
         for line in data_print(labeled_data, Fore.YELLOW):
             log.info(line)
@@ -98,8 +106,8 @@ class NaiveBayesClassifier(LinearClassifier):
         # has appeared across all data points
         alpha_count = 0
         # TODO (2022.11.20) is this the correct denominator?
-        word_count = self.m * len(self.data)
-        for features, label in self.data:
+        word_count = self.m * len(self.training_data)
+        for features, label in self.training_data:
             if label != c:
                 continue
             alpha_count += features[alpha]
@@ -111,17 +119,37 @@ class NaiveBayesClassifier(LinearClassifier):
         This is a learning tool that prefers helpful text output over performance
         """
         labels = self.get_unique_labels()
-        self.model = {l: collections.defaultdict(dict) for l in labels}
+        self.model = {l: collections.defaultdict(float) for l in labels}
         for l in labels:
             log.info(f"calculating params for label: {l}")
-            for i, word in enumerate(self.get_unique_words()):
+            # TODO (2022.12.02): sorting the set to make order deterministic.
+            # is there a better way?
+            for i, word in enumerate(sorted(self.get_unique_words())):
                 param = self.calculate_parameter(l, word)
                 if i % 502 == 0:
-                    log.info(f"{word=:>20}: {param}")
+                    log.info(f"{word=:>20}: {param:0.5}")
                 self.model[l][word] = param
 
-    def predict():
-        pass
+    def test_datapoint(self, datapoint: collections.Counter, c: bool):
+        prod = 1
+        for word, count in datapoint.items():
+            # print(self.model[c][word], word)
+            prod *= pow(self.model[c][word], count)
+        return prod
+
+    def predict(self):
+        correct = 0
+        for words, label in self.test_data:
+            log.debug(f"testing data point: {words}")
+            log.debug(f"expect:             {label}")
+            outcome = {}
+            for l in self.get_unique_labels():
+                outcome[l] = self.test_datapoint(words, l)
+            res = max(outcome, key=outcome.get)
+            log.debug(f"got:                {res}")
+            if label == res:
+                correct += 1
+        print(correct, len(self.test_data), correct / len(self.test_data))
 
 
 class KNearestNeighbors(LinearClassifier):

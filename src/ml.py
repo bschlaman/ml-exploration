@@ -40,11 +40,14 @@ def main():
     label_probability_true = sum(nbc.model[True].values())
     log.info(f"{label_probability_true=}")
 
+    n = 10
     for label in nbc.get_unique_labels():
-        log.info(f"top 25 most likely words for {label} news")
+        log.info(f"top {n} most likely words for {label} news")
         log.info("======================================")
-        for param, word in sorted(nbc.get_top_n_params(label, 24), reverse=True):
-            log.info(f"{word=:>20}: {param}")
+        for param, word in sorted(nbc.get_top_n_params(label, n), reverse=True):
+            log.info(f"{word=:>20}: {param:0.5}")
+
+    nbc.predict()
 
 
 if __name__ == "__main__":

@@ -3,8 +3,6 @@ import logging
 import random
 from typing import Generator
 
-from constants import RANDOM_SEED
-
 log = logging.getLogger(__name__)
 
 
@@ -20,4 +18,4 @@ def _fetch_data_from_file() -> list[dict[str, str]]:
         # public methods should appear as generators to their consumers
         reader = csv.DictReader(csvfile)
         log.debug(f"using data fields: {reader.fieldnames}")
-        return list(reader)[:1000]
+        return list(reader)[:10000]
