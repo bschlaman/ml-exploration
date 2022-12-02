@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import collections
 import random
 import itertools
+import heapq
 import logging
 from colorama import Fore
 
@@ -29,7 +30,7 @@ def transform_raw_data(raw_data: list[dict[str, str]]) -> tuple[list[str], bool]
 class LinearClassifier(ABC):
     w: Vector
 
-    def __init__(self, data: tuple[list[str], bool]):
+    def __init__(self, data: list[tuple[list[str], bool]]):
         self.data = []
         self.m = 6  # number of words per datum
         for features, label in data:
@@ -43,7 +44,7 @@ class LinearClassifier(ABC):
 
     # core components of a classifier
     @abstractmethod
-    def calculate_parameter(self, c: int, alpha: str) -> float:
+    def calculate_parameter(self, c: bool, alpha: str) -> float:
         """Estimate θ^_αc for a generative algorithm with
         multinomial features
         """
@@ -51,6 +52,9 @@ class LinearClassifier(ABC):
 
     def get_unique_words(self) -> set[str]:
         return set(itertools.chain(*(_[0].keys() for _ in self.data)))
+
+    def get_unique_labels(self) -> set[bool]:
+        return set(_[1] for _ in self.data)
 
     def log_data_stats(self):
         num_unique_words = len(self.get_unique_words())
@@ -65,13 +69,27 @@ class LinearClassifier(ABC):
         for line in data_print(labeled_data, Fore.YELLOW):
             log.info(line)
 
+    def get_top_n_params(self, c: bool, n: int) -> tuple[float, str]:
+        heap = []
+        for word in self.get_unique_words():
+            param = self.model[c][word]
+            if len(heap) < n:
+                heapq.heappush(heap, (param, word))
+            elif param > heap[0][0]:
+                heapq.heapreplace(heap, (param, word))
+        return heap
+
+    @abstractmethod
+    def train(self):
+        pass
+
 
 class NaiveBayesClassifier(LinearClassifier):
     def __init__(self):
         raw_data = list(data_iter())
         super().__init__(list(transform_raw_data(raw_data)))
 
-    def calculate_parameter(self, c: int, alpha: str) -> float:
+    def calculate_parameter(self, c: bool, alpha: str) -> float:
         """Estimate θ^_αc for a generative algorithm with
         multinomial features
         """
@@ -86,6 +104,24 @@ class NaiveBayesClassifier(LinearClassifier):
                 continue
             alpha_count += features[alpha]
         return alpha_count / word_count
+
+    # TODO (2022.12.01): can this be algo agnostic?
+    def train(self):
+        """Note: this function does not promise to be perfectly optimized!!!
+        This is a learning tool that prefers helpful text output over performance
+        """
+        labels = self.get_unique_labels()
+        self.model = {l: collections.defaultdict(dict) for l in labels}
+        for l in labels:
+            log.info(f"calculating params for label: {l}")
+            for i, word in enumerate(self.get_unique_words()):
+                param = self.calculate_parameter(l, word)
+                if i % 502 == 0:
+                    log.info(f"{word=:>20}: {param}")
+                self.model[l][word] = param
+
+    def predict():
+        pass
 
 
 class KNearestNeighbors(LinearClassifier):
