@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-import collections
 import random
+import collections
 import itertools
 import heapq
 import logging
@@ -14,32 +14,11 @@ from linear_classifiers.data_generator import data_iter
 log = logging.getLogger(__name__)
 
 
-def transform_raw_data(raw_data: list[dict[str, str]]) -> tuple[list[str], bool]:
-    """Convert raw data into the format the classifiers expect"""
-    label_key = "real"
-    features_key = "title"
-
-    def _conv_xy(d):
-        x, y = d
-        words = list(
-            # word after non alnum char extraction must not be empty
-            filter(
-                bool, map(lambda w: "".join(filter(str.isalnum, w)), x.lower().split())
-            )
-        )
-        return (words, bool(int(y)))
-
-    return map(_conv_xy, ((rd[features_key], rd[label_key]) for rd in raw_data))
-
-
 class LinearClassifier(ABC):
     w: Vector
 
-    def __init__(self, data: list[tuple[list[str], bool]]):
-        self.data = []
-        self.m = 6  # number of words per datum
-        for features, label in data:
-            self.data.append((self._sample_features(features), label))
+    def __init__(self):
+        self.data: list[tuple[list[str], bool]] = list(data_iter())
 
         split = int(len(self.data) * 0.7)
         self.training_data = self.data[:split]
@@ -48,20 +27,7 @@ class LinearClassifier(ABC):
         # upfront calculations
         self.label_counts = collections.Counter((_[1] for _ in self.training_data))
         self.label_weights = self._get_label_weights()
-
-    def _sample_features(self, features: list[str]) -> collections.Counter:
-        """Convert raw data into feature vectors that can be operated on"""
-        # not sure if this is the same as the dimensionality
-        # since there will likely be >>6 distinct words across data points
-        return collections.Counter(random.choices(features, k=self.m))
-
-    # core components of a classifier
-    @abstractmethod
-    def calculate_parameter(self, c: bool, alpha: str) -> float:
-        """Estimate θ^_αc for a generative algorithm with
-        multinomial features
-        """
-        pass
+        self.num_words_for_label = self._get_num_words_for_label()
 
     def get_unique_words(self) -> set[str]:
         return set(itertools.chain(*(_[0].keys() for _ in self.training_data)))
@@ -72,8 +38,18 @@ class LinearClassifier(ABC):
     def _get_label_weights(self) -> dict[bool, float]:
         """P(y)"""
         return {
-            l: self.label_counts[l] / len(self.training_data)
-            for l in self.get_unique_labels()
+            y: self.label_counts[y] / len(self.training_data)
+            for y in self.get_unique_labels()
+        }
+
+    def _get_num_words_for_label(self):
+        return {
+            y: sum(
+                sum(features.values())
+                for features, label in self.training_data
+                if y == label
+            )
+            for y in self.get_unique_labels()
         }
 
     def log_data_stats(self):
@@ -89,6 +65,7 @@ class LinearClassifier(ABC):
             log.info(line)
 
     def get_top_n_params(self, c: bool, n: int) -> tuple[float, str]:
+        # TODO: lol just use n_largest
         heap = []
         for word in self.get_unique_words():
             param = self.model[c][word]
@@ -98,16 +75,24 @@ class LinearClassifier(ABC):
                 heapq.heapreplace(heap, (param, word))
         return heap
 
+    # core components of a classifier
+    @abstractmethod
+    def calculate_parameter(self, c: bool, alpha: str) -> float:
+        """Estimate θ^_αc for a generative algorithm with
+        multinomial features
+        """
+        pass
+
     @abstractmethod
     def train(self):
         pass
 
+    @abstractmethod
+    def predict(self):
+        pass
+
 
 class NaiveBayesClassifier(LinearClassifier):
-    def __init__(self):
-        raw_data = list(data_iter())
-        super().__init__(list(transform_raw_data(raw_data)))
-
     def calculate_parameter(self, c: bool, alpha: str) -> float:
         """Estimate θ^_αc for a generative algorithm with
         multinomial features
@@ -116,12 +101,11 @@ class NaiveBayesClassifier(LinearClassifier):
         # sum(I(y_i == c)x_iα); i.e. number of times word α
         # has appeared across all data points
         alpha_count = 0
-        num_words_for_label = self.m * self.label_counts[c]
         for features, label in self.training_data:
             if label != c:
                 continue
             alpha_count += features[alpha]
-        return alpha_count / num_words_for_label
+        return alpha_count / self.num_words_for_label[c]
 
     # TODO (2022.12.01): can this be algo agnostic?
     def train(self):
@@ -129,16 +113,22 @@ class NaiveBayesClassifier(LinearClassifier):
         This is a learning tool that prefers helpful text output over performance
         """
         labels = self.get_unique_labels()
-        self.model = {l: collections.defaultdict(float) for l in labels}
-        for l in labels:
-            log.info(f"calculating params for label: {l}")
+        self.model = {y: collections.defaultdict(float) for y in labels}
+        for y in labels:
+            log.info(f"calculating params for label: {y}")
             # TODO (2022.12.02): sorting the set to make order deterministic.
             # is there a better way?
             for i, word in enumerate(sorted(self.get_unique_words())):
-                param = self.calculate_parameter(l, word)
+                param = self.calculate_parameter(y, word)
                 if i % 502 == 0:
                     log.info(f"{word=:>20}: {param:0.5}")
-                self.model[l][word] = param
+                self.model[y][word] = param
+
+    def test_datapoint_baseline(self, _datapoint: collections.Counter, c: bool):
+        """Simulate an 'educated guess', P(y).  Success rate should also be ~P(y)
+        This value represents a baseline that any decent model should beat
+        """
+        return self.label_weights[c]
 
     def test_datapoint(self, datapoint: collections.Counter, c: bool):
         # start with the weights, π_c
@@ -151,8 +141,8 @@ class NaiveBayesClassifier(LinearClassifier):
         correct = 0
         for words, label in self.test_data:
             outcome = {}
-            for l in self.get_unique_labels():
-                outcome[l] = self.test_datapoint(words, l)
+            for y in self.get_unique_labels():
+                outcome[y] = self.test_datapoint(words, y)
             res = max(outcome, key=outcome.get)
             if label == res:
                 correct += 1
@@ -166,6 +156,4 @@ class NaiveBayesClassifier(LinearClassifier):
 
 
 class KNearestNeighbors(LinearClassifier):
-    def __init__(self):
-        raw_data = list(data_iter())
-        super().__init__(list(transform_raw_data(raw_data)))
+    pass
