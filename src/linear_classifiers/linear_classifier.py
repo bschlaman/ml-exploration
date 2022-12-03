@@ -41,8 +41,13 @@ class LinearClassifier(ABC):
         for features, label in data:
             self.data.append((self._sample_features(features), label))
 
-        self.training_data = self.data[:7000]
-        self.test_data = self.data[7000:]
+        split = int(len(self.data) * 0.7)
+        self.training_data = self.data[:split]
+        self.test_data = self.data[split:]
+
+        # upfront calculations
+        self.label_counts = collections.Counter((_[1] for _ in self.training_data))
+        self.label_weights = self._get_label_weights()
 
     def _sample_features(self, features: list[str]) -> collections.Counter:
         """Convert raw data into feature vectors that can be operated on"""
@@ -64,15 +69,21 @@ class LinearClassifier(ABC):
     def get_unique_labels(self) -> set[bool]:
         return set(_[1] for _ in self.training_data)
 
+    def _get_label_weights(self) -> dict[bool, float]:
+        """P(y)"""
+        return {
+            l: self.label_counts[l] / len(self.training_data)
+            for l in self.get_unique_labels()
+        }
+
     def log_data_stats(self):
         num_unique_words = len(self.get_unique_words())
-        label_counts = collections.Counter((_[1] for _ in self.training_data))
         labeled_data = {
             "num datapoints": len(self.training_data),
-            "label counts": label_counts,
+            "label counts": self.label_counts,
             "num unique words": num_unique_words,
-            "P(y = true)": label_counts[True] / len(self.training_data),
-            "P(y = false)": label_counts[False] / len(self.training_data),
+            "P(y = true)": self.label_weights[True],
+            "P(y = false)": self.label_weights[False],
         }
         for line in data_print(labeled_data, Fore.YELLOW):
             log.info(line)
@@ -105,13 +116,12 @@ class NaiveBayesClassifier(LinearClassifier):
         # sum(I(y_i == c)x_iα); i.e. number of times word α
         # has appeared across all data points
         alpha_count = 0
-        # TODO (2022.11.20) is this the correct denominator?
-        word_count = self.m * len(self.training_data)
+        num_words_for_label = self.m * self.label_counts[c]
         for features, label in self.training_data:
             if label != c:
                 continue
             alpha_count += features[alpha]
-        return alpha_count / word_count
+        return alpha_count / num_words_for_label
 
     # TODO (2022.12.01): can this be algo agnostic?
     def train(self):
@@ -131,24 +141,27 @@ class NaiveBayesClassifier(LinearClassifier):
                 self.model[l][word] = param
 
     def test_datapoint(self, datapoint: collections.Counter, c: bool):
-        prod = 1
+        # start with the weights, π_c
+        prod = self.label_weights[c]
         for word, count in datapoint.items():
-            # print(self.model[c][word], word)
             prod *= pow(self.model[c][word], count)
         return prod
 
     def predict(self):
         correct = 0
         for words, label in self.test_data:
-            log.debug(f"testing data point: {words}")
-            log.debug(f"expect:             {label}")
             outcome = {}
             for l in self.get_unique_labels():
                 outcome[l] = self.test_datapoint(words, l)
             res = max(outcome, key=outcome.get)
-            log.debug(f"got:                {res}")
             if label == res:
                 correct += 1
+
+            if random.random() < 0.001:
+                log.debug(f"testing: {words}")
+                log.debug(f"expect:  {label}")
+                log.debug(f"got:     {res}")
+                print(outcome)
         print(correct, len(self.test_data), correct / len(self.test_data))
 
 

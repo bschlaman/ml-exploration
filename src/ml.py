@@ -40,6 +40,8 @@ def main():
     label_probability_true = sum(nbc.model[True].values())
     log.info(f"{label_probability_true=}")
 
+    print(nbc._get_label_weights())
+
     n = 10
     for label in nbc.get_unique_labels():
         log.info(f"top {n} most likely words for {label} news")
