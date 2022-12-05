@@ -28,7 +28,7 @@ def _fetch_data_from_file() -> list[dict[str, str]]:
 # may not be universal across supervised learning algorithms
 def _sample_features(features: list[str]) -> collections.Counter:
     """Select randomly from words and create feature vectors (counts)"""
-    m = 6  # number of words per datum
+    m = 12  # number of words per datum
     return collections.Counter(random.choices(features, k=m))
 
 

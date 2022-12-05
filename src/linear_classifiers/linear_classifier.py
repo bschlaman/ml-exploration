@@ -27,7 +27,8 @@ class LinearClassifier(ABC):
         # upfront calculations
         self.label_counts = collections.Counter((_[1] for _ in self.training_data))
         self.label_weights = self._get_label_weights()
-        self.num_words_for_label = self._get_num_words_for_label()
+        self.num_words_by_label = self._get_num_words_by_label()
+        self.dictionary = self.get_unique_words()
 
     def get_unique_words(self) -> set[str]:
         return set(itertools.chain(*(_[0].keys() for _ in self.training_data)))
@@ -42,7 +43,7 @@ class LinearClassifier(ABC):
             for y in self.get_unique_labels()
         }
 
-    def _get_num_words_for_label(self):
+    def _get_num_words_by_label(self):
         return {
             y: sum(
                 sum(features.values())
@@ -53,7 +54,7 @@ class LinearClassifier(ABC):
         }
 
     def log_data_stats(self):
-        num_unique_words = len(self.get_unique_words())
+        num_unique_words = len(self.dictionary)
         labeled_data = {
             "num datapoints": len(self.training_data),
             "label counts": self.label_counts,
@@ -67,7 +68,7 @@ class LinearClassifier(ABC):
     def get_top_n_params(self, c: bool, n: int) -> tuple[float, str]:
         # TODO: lol just use n_largest
         heap = []
-        for word in self.get_unique_words():
+        for word in self.dictionary:
             param = self.model[c][word]
             if len(heap) < n:
                 heapq.heappush(heap, (param, word))
@@ -93,19 +94,21 @@ class LinearClassifier(ABC):
 
 
 class NaiveBayesClassifier(LinearClassifier):
-    def calculate_parameter(self, c: bool, alpha: str) -> float:
+    def calculate_parameter(
+        self, c: bool, alpha: str, plus_one_smoothing: bool = False
+    ) -> float:
         """Estimate θ^_αc for a generative algorithm with
         multinomial features
         """
-        # TODO (2022.11.20) add smoothing; should I assume I've seen each word once?
+        l = int(plus_one_smoothing)
         # sum(I(y_i == c)x_iα); i.e. number of times word α
-        # has appeared across all data points
-        alpha_count = 0
+        # has appeared across all data points with y == c
+        alpha_count = l
         for features, label in self.training_data:
             if label != c:
                 continue
             alpha_count += features[alpha]
-        return alpha_count / self.num_words_for_label[c]
+        return alpha_count / (self.num_words_by_label[c] + l * len(self.dictionary))
 
     # TODO (2022.12.01): can this be algo agnostic?
     def train(self):
@@ -118,8 +121,8 @@ class NaiveBayesClassifier(LinearClassifier):
             log.info(f"calculating params for label: {y}")
             # TODO (2022.12.02): sorting the set to make order deterministic.
             # is there a better way?
-            for i, word in enumerate(sorted(self.get_unique_words())):
-                param = self.calculate_parameter(y, word)
+            for i, word in enumerate(sorted(self.dictionary)):
+                param = self.calculate_parameter(y, word, plus_one_smoothing=True)
                 if i % 502 == 0:
                     log.info(f"{word=:>20}: {param:0.5}")
                 self.model[y][word] = param
@@ -131,7 +134,7 @@ class NaiveBayesClassifier(LinearClassifier):
         return self.label_weights[c]
 
     def test_datapoint(self, datapoint: collections.Counter, c: bool):
-        # start with the weights, π_c
+        # start with the label weights, π_c
         prod = self.label_weights[c]
         for word, count in datapoint.items():
             prod *= pow(self.model[c][word], count)
@@ -143,7 +146,12 @@ class NaiveBayesClassifier(LinearClassifier):
             outcome = {}
             for y in self.get_unique_labels():
                 outcome[y] = self.test_datapoint(words, y)
-            res = max(outcome, key=outcome.get)
+
+            if len(set(outcome.values())) == 1:
+                res = max(outcome, key=lambda l: self.test_datapoint_baseline(None, l))
+            else:
+                res = max(outcome, key=outcome.get)
+
             if label == res:
                 correct += 1
 
