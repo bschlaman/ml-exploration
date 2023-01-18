@@ -28,9 +28,9 @@ class LinearClassifier(ABC):
         self.label_counts = collections.Counter((_[1] for _ in self.training_data))
         self.label_weights = self._get_label_weights()
         self.num_words_by_label = self._get_num_words_by_label()
-        self.dictionary = self.get_unique_words()
+        self.dictionary = self._get_unique_words()
 
-    def get_unique_words(self) -> set[str]:
+    def _get_unique_words(self) -> set[str]:
         return set(itertools.chain(*(_[0].keys() for _ in self.training_data)))
 
     def get_unique_labels(self) -> set[bool]:
@@ -76,6 +76,14 @@ class LinearClassifier(ABC):
                 heapq.heapreplace(heap, (param, word))
         return heap
 
+    def constant_classifier(self):
+        """Error upper bound.  In classification, this is the most common label.
+        In regression settings, the constant sould minimize loss on the training set.
+        This value represents a baseline that any decent classifier should beat
+        with statistical significance.
+        """
+        return max(self.label_weights.values())
+
     # core components of a classifier
     @abstractmethod
     def calculate_parameter(self, c: bool, alpha: str) -> float:
@@ -113,7 +121,7 @@ class NaiveBayesClassifier(LinearClassifier):
     # TODO (2022.12.01): can this be algo agnostic?
     def train(self):
         """Note: this function does not promise to be perfectly optimized!!!
-        This is a learning tool that prefers helpful text output over performance
+        This is a learning tool that prefers helpful text output over performance.
         """
         labels = self.get_unique_labels()
         self.model = {y: collections.defaultdict(float) for y in labels}
@@ -126,12 +134,6 @@ class NaiveBayesClassifier(LinearClassifier):
                 if i % 502 == 0:
                     log.info(f"{word=:>20}: {param:0.5}")
                 self.model[y][word] = param
-
-    def test_datapoint_baseline(self, _datapoint: collections.Counter, c: bool):
-        """Simulate an 'educated guess', P(y).  Success rate should also be ~P(y)
-        This value represents a baseline that any decent model should beat
-        """
-        return self.label_weights[c]
 
     def test_datapoint(self, datapoint: collections.Counter, c: bool):
         # start with the label weights, π_c
@@ -148,7 +150,7 @@ class NaiveBayesClassifier(LinearClassifier):
                 outcome[y] = self.test_datapoint(words, y)
 
             if len(set(outcome.values())) == 1:
-                res = max(outcome, key=lambda l: self.test_datapoint_baseline(None, l))
+                res = self.constant_classifier()
             else:
                 res = max(outcome, key=outcome.get)
 
@@ -164,4 +166,9 @@ class NaiveBayesClassifier(LinearClassifier):
 
 
 class KNearestNeighbors(LinearClassifier):
-    pass
+    def __init__(self, k: int):
+        self.k = k
+        super().__init__()
+
+    def test_datapoint(self, datapoint: collections.Counter, c: bool):
+        pass
