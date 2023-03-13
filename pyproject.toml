@@ -1,0 +1,8 @@
+[tool.pyright]
+include = ["src"]
+pythonPlatform = "Linux"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+

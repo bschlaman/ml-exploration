@@ -2,16 +2,16 @@ import csv
 import logging
 import random
 import collections
-from typing import Generator
+from typing import Generator, Iterable
 
 log = logging.getLogger(__name__)
 
 
-def data_iter(num_records: int = 0) -> Generator[dict[str, str], None, None]:
+def data_iter(num_records: int = 0) -> Generator[tuple[dict, bool], None, None]:
     """num_records reduces the data size for testing purposes"""
     data = _fetch_data_from_file()
     random.shuffle(data)
-    yield from transform_raw_data(data[:num_records] if num_records else data)
+    yield from transform_raw_data(data[-num_records:])
 
 
 def _fetch_data_from_file() -> list[dict[str, str]]:
@@ -32,7 +32,7 @@ def _sample_features(features: list[str]) -> collections.Counter:
     return collections.Counter(random.choices(features, k=m))
 
 
-def transform_raw_data(raw_data: list[dict[str, str]]) -> tuple[list[str], bool]:
+def transform_raw_data(raw_data: list[dict[str, str]]) -> Iterable[tuple[dict, bool]]:
     """Convert raw data into the format the linear classifiers expect.
     Format expected:
     ( {'word1': count1, 'word2': count2, ...}, class )

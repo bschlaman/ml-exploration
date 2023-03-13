@@ -18,7 +18,7 @@ class LinearClassifier(ABC):
     w: Vector
 
     def __init__(self):
-        self.data: list[tuple[list[str], bool]] = list(data_iter())
+        self.data: list[tuple[dict, bool]] = list(data_iter())
 
         split = int(len(self.data) * 0.7)
         self.training_data = self.data[:split]
@@ -102,6 +102,9 @@ class LinearClassifier(ABC):
 
 
 class NaiveBayesClassifier(LinearClassifier):
+    def __init__(self):
+        self.model: dict[bool, dict[str, float]]
+
     def calculate_parameter(
         self, c: bool, alpha: str, plus_one_smoothing: bool = False
     ) -> float:
