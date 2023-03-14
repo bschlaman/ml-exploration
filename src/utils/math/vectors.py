@@ -1,6 +1,6 @@
 from __future__ import annotations
 import math
-from utils.helpers import compact_repr
+from utils.printing import compact_repr
 
 
 class Vector:

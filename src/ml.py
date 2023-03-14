@@ -1,11 +1,8 @@
 import logging
 import random
-from colorama import Fore
 from constants import RANDOM_SEED
-from law_large_numbers import lln
-from k_nearest_neighbors import knn
-from perceptron import perceptron
-from linear_classifiers.naive_bayes import MultinomialNaiveBayes
+from utils.printing import blu
+import enum
 
 logging.basicConfig(
     # format="%(asctime)s [%(levelname)-8s] (%(name)s) %(message)s",
@@ -15,41 +12,35 @@ logging.basicConfig(
 
 log = logging.getLogger(__name__)
 
+class DemoMode(enum.Enum):
+    LAW_LARGE_NUMBERS = "LAW_LARGE_NUMBERS"
+    K_NEAREST_NEIGHBORS = "K_NEAREST_NEIGHBORS"
+    PERCEPTRON = "PERCEPTRON"
+    LINEAR_CLASSIFIERS = "LINEAR_CLASSIFIERS"
+
+DEMO_MODE = DemoMode.LINEAR_CLASSIFIERS
 
 def main():
-    log.info(f"{Fore.BLUE}Welcome to the ml module{Fore.RESET}")
+    log.info(blu("Welcome to the ml module"))
     random.seed(RANDOM_SEED)
     log.debug(f"using random seed: {RANDOM_SEED}")
 
-    # log.info(f"starting expected value convergence test...")
-    # lln.lln_convergence()
-    # log.info(f"starting curse of dimensionality test...")
-    # knn.curse_of_dimensionality()
-    # log.info(f"starting perceptron demo...")
-    # log.info(f"starting perceptron test...")
-    # perceptron.perceptron2D()
-
-    log.info("starting linear classifier test...")
-    nbc = MultinomialNaiveBayes()
-    nbc.log_data_stats()
-    nbc.train()
-
-    label_probability_false = sum(nbc.model[False].values())
-    log.info(f"{label_probability_false=}")
-
-    label_probability_true = sum(nbc.model[True].values())
-    log.info(f"{label_probability_true=}")
-
-    print(nbc._get_label_weights())
-
-    n = 10
-    for label in nbc._get_unique_labels():
-        log.info(f"top {n} most likely words for {label} news")
-        log.info("======================================")
-        for param, word in sorted(nbc.get_top_n_params(label, n), reverse=True):
-            log.info(f"{word=:>20}: {param:0.5}")
-
-    nbc.predict()
+    if DEMO_MODE == DemoMode.LAW_LARGE_NUMBERS:
+        from law_large_numbers import lln
+        log.info(f"starting expected value convergence test...")
+        lln.lln_convergence()
+    if DEMO_MODE == DemoMode.K_NEAREST_NEIGHBORS:
+        from k_nearest_neighbors import knn
+        log.info(f"starting curse of dimensionality test...")
+        knn.curse_of_dimensionality()
+    if DEMO_MODE == DemoMode.PERCEPTRON:
+        from perceptron import perceptron
+        log.info(f"starting perceptron demo...")
+        perceptron.perceptron2D()
+    if DEMO_MODE == DemoMode.LINEAR_CLASSIFIERS:
+        import linear_classifiers.entry
+        log.info(f"starting linear classifier demo with multinomial inputs...")
+        linear_classifiers.entry.run_classifiers()
 
 
 if __name__ == "__main__":
