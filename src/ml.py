@@ -5,7 +5,7 @@ from constants import RANDOM_SEED
 from law_large_numbers import lln
 from k_nearest_neighbors import knn
 from perceptron import perceptron
-from linear_classifiers.linear_classifier import NaiveBayesClassifier
+from linear_classifiers.naive_bayes import MultinomialNaiveBayes
 
 logging.basicConfig(
     # format="%(asctime)s [%(levelname)-8s] (%(name)s) %(message)s",
@@ -30,7 +30,7 @@ def main():
     # perceptron.perceptron2D()
 
     log.info("starting linear classifier test...")
-    nbc = NaiveBayesClassifier()
+    nbc = MultinomialNaiveBayes()
     nbc.log_data_stats()
     nbc.train()
 
@@ -43,7 +43,7 @@ def main():
     print(nbc._get_label_weights())
 
     n = 10
-    for label in nbc.get_unique_labels():
+    for label in nbc._get_unique_labels():
         log.info(f"top {n} most likely words for {label} news")
         log.info("======================================")
         for param, word in sorted(nbc.get_top_n_params(label, n), reverse=True):

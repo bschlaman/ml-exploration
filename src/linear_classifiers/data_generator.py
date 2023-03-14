@@ -1,7 +1,7 @@
+import collections
 import csv
 import logging
 import random
-import collections
 from typing import Generator, Iterable
 
 log = logging.getLogger(__name__)
