@@ -78,15 +78,16 @@ class MultinomialLinearClassifier(ABC):
                 heapq.heapreplace(heap, (param, word))
         return heap
 
-    def constant_classifier(self):
+    def constant_classifier(self) -> bool:
         """Error upper bound.  In classification, this is the most common label.
         In regression settings, the constant sould minimize loss on the training set.
         This value represents a baseline that any decent classifier should beat
         with statistical significance.
         """
-        return max(self.label_weights.values())
+        return max(self.label_counts, key=self.label_counts.get)
 
     # core components of a classifier
+    # need to revisit this component; does it have an analog for knn?
     @abstractmethod
     def calculate_parameter(self, c: bool, alpha: str) -> float:
         """Estimate θ^_αc for a generative algorithm with

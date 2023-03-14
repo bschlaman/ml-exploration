@@ -78,3 +78,24 @@ Requirements
 - common interface
 - should allow for smoothing
 - in the case of perceptron, catch an infinite loop
+
+KNN results (next try sharding the dataset)
+
+k = 3
+5250 6959 0.7544187383244719
+
+k = 5
+5351 6959 0.7689323178617617
+
+k = 4 with tiebreaker `constant_classifier`
+5411 6959 0.7775542462997557
+
+k = 6 with tiebreaker `constant_classifier`
+5424 6959 0.7794223307946544
+
+k = 111
+5347 6959 0.7683575226325622
+
+
+NB results
+5489 6959 0.7887627532691479

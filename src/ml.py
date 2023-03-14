@@ -5,12 +5,12 @@ from utils.printing import blu
 import enum
 
 logging.basicConfig(
-    # format="%(asctime)s [%(levelname)-8s] (%(name)s) %(message)s",
     format="[%(levelname)-8s] (%(name)s) %(message)s",
     level=logging.DEBUG,
 )
 
 log = logging.getLogger(__name__)
+
 
 class DemoMode(enum.Enum):
     LAW_LARGE_NUMBERS = "LAW_LARGE_NUMBERS"
@@ -18,7 +18,9 @@ class DemoMode(enum.Enum):
     PERCEPTRON = "PERCEPTRON"
     LINEAR_CLASSIFIERS = "LINEAR_CLASSIFIERS"
 
+
 DEMO_MODE = DemoMode.LINEAR_CLASSIFIERS
+
 
 def main():
     log.info(blu("Welcome to the ml module"))
@@ -27,18 +29,25 @@ def main():
 
     if DEMO_MODE == DemoMode.LAW_LARGE_NUMBERS:
         from law_large_numbers import lln
+
         log.info(f"starting expected value convergence test...")
         lln.lln_convergence()
+
     if DEMO_MODE == DemoMode.K_NEAREST_NEIGHBORS:
         from k_nearest_neighbors import knn
+
         log.info(f"starting curse of dimensionality test...")
         knn.curse_of_dimensionality()
+
     if DEMO_MODE == DemoMode.PERCEPTRON:
         from perceptron import perceptron
+
         log.info(f"starting perceptron demo...")
         perceptron.perceptron2D()
+
     if DEMO_MODE == DemoMode.LINEAR_CLASSIFIERS:
         import linear_classifiers.entry
+
         log.info(f"starting linear classifier demo with multinomial inputs...")
         linear_classifiers.entry.run_classifiers()
 

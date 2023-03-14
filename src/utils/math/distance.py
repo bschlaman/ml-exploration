@@ -14,9 +14,9 @@ def minkowski_distance(p1: tuple[float], p2: tuple[float], p: int) -> float:
     return pow(total, 1 / p)
 
 
-def euclidean_distance(p1: tuple[float], p2: tuple[float], p: int = 2) -> float:
+def euclidean_distance(p1: tuple[float], p2: tuple[float]) -> float:
     return minkowski_distance(p1, p2, 2)
 
 
-def manhattan_distance(p1: tuple[float], p2: tuple[float], p: int = 2) -> float:
+def manhattan_distance(p1: tuple[float], p2: tuple[float]) -> float:
     return minkowski_distance(p1, p2, 1)

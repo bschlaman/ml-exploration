@@ -3,6 +3,7 @@ import logging
 import random
 
 from linear_classifiers.multinomial_linear_classifier import MultinomialLinearClassifier
+from utils.printing import mag
 
 log = logging.getLogger(__name__)
 
@@ -32,16 +33,16 @@ class MultinomialNaiveBayes(MultinomialLinearClassifier):
         labels = self._get_unique_labels()
         self.model = {y: collections.defaultdict(float) for y in labels}
         for y in labels:
-            log.info(f"calculating params for label: {y}")
+            log.info(f"calculating params for label: {mag(str(y))}")
             # TODO (2022.12.02): sorting the set to make order deterministic.
             # is there a better way?
             for i, word in enumerate(sorted(self.dictionary)):
                 param = self.calculate_parameter(y, word, plus_one_smoothing=True)
                 if i % 502 == 0:
-                    log.info(f"{word=:>20}: {param:0.5}")
+                    log.debug(f"{word=:>20}: {param:0.5}")
                 self.model[y][word] = param
 
-    def _test_datapoint(self, datapoint: collections.Counter, c: bool):
+    def _test_datapoint(self, datapoint: dict[str, int], c: bool) -> float:
         # start with the label weights, π_c
         prod = self.label_weights[c]
         for word, count in datapoint.items():

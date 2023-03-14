@@ -1,8 +1,13 @@
 import logging
+from linear_classifiers.knn import MultinomialKNearestNeighbors
 from linear_classifiers.naive_bayes import MultinomialNaiveBayes
+from utils.printing import grn
+
 log = logging.getLogger(__name__)
 
+
 def run_classifiers():
+    log.info(f"testing classifier: {grn(MultinomialNaiveBayes.__name__)}")
     nbc = MultinomialNaiveBayes()
     nbc.log_data_stats()
     nbc.train()
@@ -23,3 +28,7 @@ def run_classifiers():
             log.info(f"{word=:>20}: {param:0.5}")
 
     nbc.predict()
+
+    log.info(f"testing classifier: {grn(MultinomialKNearestNeighbors.__name__)}")
+    knnc = MultinomialKNearestNeighbors(111)
+    knnc.predict()
