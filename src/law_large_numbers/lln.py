@@ -1,7 +1,9 @@
-import random
-from colorama import Fore
 import logging
+import random
 from statistics import mean
+
+from colorama import Fore
+
 from utils.helpers import compact_repr, data_print
 
 log = logging.getLogger(__name__)

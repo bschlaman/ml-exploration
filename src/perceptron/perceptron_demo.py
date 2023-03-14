@@ -1,15 +1,17 @@
-import sys
 import os
+import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
+import random
+
+import numpy as np
+from colorama import Fore
 from matplotlib import pyplot as plt
 from matplotlib.patches import Circle
-import numpy as np
-import random
-from colorama import Fore
-from utils.math.vectors import Vector
+
 from utils.helpers import data_print
+from utils.math.vectors import Vector
 
 
 class FeaturePlotEventHandler:
@@ -159,9 +161,11 @@ for x in range(1000):
 
 
 import random
-from utils.helpers import data_print
-from colorama import Fore
 import time
+
+from colorama import Fore
+
+from utils.helpers import data_print
 
 LABEL_SPACE = (-1, 1)
 

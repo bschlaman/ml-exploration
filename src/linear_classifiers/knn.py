@@ -1,10 +1,11 @@
 import collections
+import heapq
+import logging
 import math
 import random
-import logging
-import heapq
 
-from linear_classifiers.multinomial_linear_classifier import MultinomialLinearClassifier
+from linear_classifiers.multinomial_linear_classifier import \
+    MultinomialLinearClassifier
 
 log = logging.getLogger(__name__)
 

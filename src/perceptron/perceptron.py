@@ -1,7 +1,9 @@
-from utils.math.vectors import Vector2D
-from utils.helpers import data_print
-from colorama import Fore
 import logging
+
+from colorama import Fore
+
+from utils.helpers import data_print
+from utils.math.vectors import Vector2D
 
 log = logging.getLogger(__name__)
 

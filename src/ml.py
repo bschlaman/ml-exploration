@@ -1,8 +1,9 @@
+import enum
 import logging
 import random
+
 from constants import RANDOM_SEED
 from utils.printing import blu
-import enum
 
 logging.basicConfig(
     format="[%(levelname)-8s] (%(name)s) %(message)s",

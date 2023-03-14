@@ -5,10 +5,10 @@ import logging
 from abc import ABC, abstractmethod
 
 from colorama import Fore
-from utils.printing import data_print
-from utils.math.vectors import Vector
 
 from linear_classifiers.data_generator import data_iter
+from utils.math.vectors import Vector
+from utils.printing import data_print
 
 log = logging.getLogger(__name__)
 

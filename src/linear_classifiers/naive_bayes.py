@@ -2,7 +2,8 @@ import collections
 import logging
 import random
 
-from linear_classifiers.multinomial_linear_classifier import MultinomialLinearClassifier
+from linear_classifiers.multinomial_linear_classifier import \
+    MultinomialLinearClassifier
 from utils.printing import mag
 
 log = logging.getLogger(__name__)

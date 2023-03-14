@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import math
+
 from utils.printing import compact_repr
 
 

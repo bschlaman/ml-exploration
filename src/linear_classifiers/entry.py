@@ -1,4 +1,5 @@
 import logging
+
 from linear_classifiers.knn import MultinomialKNearestNeighbors
 from linear_classifiers.naive_bayes import MultinomialNaiveBayes
 from utils.printing import grn

@@ -1,11 +1,13 @@
-from utils.math.distance import minkowski_distance, euclidean_distance
-from utils.helpers import compact_repr, data_print
 import logging
 import random
-from colorama import Fore
-from statistics import mean
-from itertools import combinations, chain
+from itertools import chain, combinations
 from math import sqrt
+from statistics import mean
+
+from colorama import Fore
+
+from utils.helpers import compact_repr, data_print
+from utils.math.distance import euclidean_distance, minkowski_distance
 
 log = logging.getLogger(__name__)
 
