@@ -135,4 +135,4 @@ class Vector2D:
         return self.x * other.x + self.y * other.y
 
     def to_tuple(self):
-        return tuple(self.x, self.y)
+        return (self.x, self.y)

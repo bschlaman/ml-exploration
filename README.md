@@ -59,6 +59,21 @@ Start with the assumption that `P(Y|X) = 1/(1+e^(wTx))`, and use MLE to find the
 
 Naive Bayes works well when you have very few data points, because you bring a gaussian assumption to the model to reduce the hyperplane search space. When you have many data points, logistic regression is preferable. (lec 12 min 7)
 
+When executing a logistic regression, gradient descent with ADAGRAD moves loss minimization in the right direction, and then newtons method (approximate the fn with a parabola which is minimized) quickly converges.  Newtons method can also diverge rapidly, so it's best to start with gradient descent (lec 13 min 5).
+
+Ideally, we would minimize the 0-1 loss: the number of training data points we missclassify - but that is not continuous or differentiable.
+
+## Linear Regression
+
+Some terminology:
+
+- Logistic regression is a classification algorithm
+- Linear regression is a regression algorithm
+
+Ordinary Least Squares (OLS)
+`y_i = wTx_i + ϵ_i, ϵ_i ~ N(0, σ^2)`
+
+
 ## Real world problem
 
 ### Problem statement
