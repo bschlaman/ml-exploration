@@ -1,26 +1,17 @@
 import collections
-import csv
 import logging
 import random
 from typing import Generator, Iterable
+from utils.data import data_load
 
 log = logging.getLogger(__name__)
 
 
 def data_iter(num_records: int = 0) -> Generator[tuple[dict, bool], None, None]:
     """num_records reduces the data size for testing purposes"""
-    data = _fetch_data_from_file()
+    data = data_load.load_from_file_csv("data.csv")
     random.shuffle(data)
     yield from transform_raw_data(data[-num_records:])
-
-
-def _fetch_data_from_file() -> list[dict[str, str]]:
-    with open("../data/data.csv") as csvfile:
-        # for now, read the data into memory
-        # public methods should appear as generators to their consumers
-        reader = csv.DictReader(csvfile)
-        log.debug(f"using data fields: {reader.fieldnames}")
-        return list(reader)
 
 
 # TODO (2022.12.02): it may make more sense to include this in

@@ -18,9 +18,10 @@ class DemoMode(enum.Enum):
     K_NEAREST_NEIGHBORS = "K_NEAREST_NEIGHBORS"
     PERCEPTRON = "PERCEPTRON"
     LINEAR_CLASSIFIERS = "LINEAR_CLASSIFIERS"
+    TRANSFORMERS = "TRANSFORMERS"
 
 
-DEMO_MODE = DemoMode.LINEAR_CLASSIFIERS
+DEMO_MODE = DemoMode.TRANSFORMERS
 
 
 def main():
@@ -51,6 +52,12 @@ def main():
 
         log.info(f"starting linear classifier demo with multinomial inputs...")
         linear_classifiers.entry.run_classifiers()
+
+    if DEMO_MODE == DemoMode.TRANSFORMERS:
+        import transformers.entry
+
+        log.info("starting transformer demo...")
+        transformers.entry.run()
 
 
 if __name__ == "__main__":

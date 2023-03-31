@@ -1,8 +1,26 @@
-[tool.pyright]
-include = ["src"]
-pythonPlatform = "Linux"
+[project]
+name = "ml-exploration"
+authors = [{name = "Brendan Schlaman", email = "brendan.schlaman@gmail.com"}]
+requires-python = ">=3.9"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = [
+    "colorama==0.4.6",
+    "prettytable==3.6.0",
+    "torch==2.0.0",
+    "numpy==1.24.2",
+]
 
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[project.optional-dependencies]
+dev = ["black", "isort", "flake8"]
+
+[tool.pyright]
+include = ["src"]
+pythonPlatform = "Linux"
+
+[project.scripts]
+ml = "src.ml:main"
