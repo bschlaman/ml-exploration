@@ -4,7 +4,7 @@ import logging
 import math
 import random
 
-from linear_classifiers.multinomial_linear_classifier import \
+from mltools.modules.linear_classifiers.multinomial_linear_classifier import \
     MultinomialLinearClassifier
 
 log = logging.getLogger(__name__)

@@ -4,25 +4,24 @@ from itertools import chain, combinations
 from math import sqrt
 from statistics import mean
 
-from colorama import Fore
-
-from utils.helpers import compact_repr, data_print
-from utils.math.distance import euclidean_distance, minkowski_distance
+from mltools.utils.formatting import std
+from mltools.utils.formatting.colors import blu, yel
+from mltools.utils.math.distance import euclidean_distance, minkowski_distance
 
 log = logging.getLogger(__name__)
 
 
 def two_point_distance_increase() -> None:
     for d in range(1, 10):
-        log.info(f"{Fore.YELLOW}dimensionality{Fore.RESET}: {d=}")
+        log.info(f"{yel('dimensionality')}: {d=}")
         p1 = tuple(random.randrange(-99, 100) for _ in range(d))
         p2 = tuple(random.randrange(-99, 100) for _ in range(d))
         log.info(
-            f"{Fore.YELLOW}using points{Fore.RESET}: "
-            f"p1: {compact_repr(p1)}, p2: {compact_repr(p2)}"
+            f"{yel('using points')}: "
+            f"p1: {std.compact_repr(p1)}, p2: {std.compact_repr(p2)}"
         )
         ed = euclidean_distance(p1, p2)
-        log.info(f"{Fore.BLUE}euclidean distance{Fore.RESET}: {ed:.5f}")
+        log.info(f"{blu('euclidean distance')}: {ed:.5f}")
 
 
 def curse_of_dimensionality() -> None:
@@ -36,7 +35,7 @@ def curse_of_dimensionality() -> None:
             "num points": num_points,
             "coord range": str([-max_coord, max_coord]),  # brackets notation
         }
-        for line in data_print(labeled_data, Fore.YELLOW):
+        for line in std.data_print(labeled_data):
             log.info(line)
 
         origin = tuple(0 for _ in range(d))
@@ -55,7 +54,7 @@ def curse_of_dimensionality() -> None:
             "avg dist to origin": avg_dist_to_origin,
             "avg dist pairwise": avg_dist_pairwise,
         }
-        for line in data_print(labeled_data, Fore.BLUE):
+        for line in std.data_print(labeled_data):
             log.info(line)
 
         # compare the closest and farthest points from p0
@@ -69,7 +68,7 @@ def curse_of_dimensionality() -> None:
         farthest_neighbor_dist = euclidean_distance(p0, farthest_neighbor)
         max_possible_distance = 2 * sqrt(d * (max_coord**2))
         labeled_data = {
-            "point chosen": compact_repr(p0),
+            "point chosen": std.compact_repr(p0),
             "dist to closest neighbor": closest_neighbor_dist,
             "dist to farthest neighbor": farthest_neighbor_dist,
             "max possible distance": max_possible_distance,
@@ -78,7 +77,7 @@ def curse_of_dimensionality() -> None:
             )
             / max_possible_distance,
         }
-        for line in data_print(labeled_data, Fore.MAGENTA):
+        for line in std.data_print(labeled_data):
             log.info(line)
 
 
@@ -86,12 +85,12 @@ def minkowski() -> None:
     p1, p2 = (3, 5), (6, -1)
 
     p = 2
-    log.info(f"{Fore.YELLOW}testing minkowski with points{Fore.RESET}: {p1=}, {p2=}")
-    log.info(f"{Fore.YELLOW}using p{Fore.RESET}: {p}")
+    log.info(f"{yel('testing minkowski with points')}: {p1=}, {p2=}")
+    log.info(f"{yel('using p')}: {p}")
     res = minkowski_distance(p1, p2, p)
-    log.info(f"{Fore.BLUE}result{Fore.RESET}: {res:.5f}")
+    log.info(f"{blu('result')}: {res:.5f}")
 
     p = 1
-    log.info(f"{Fore.YELLOW}using p{Fore.RESET}: {p}")
+    log.info(f"{yel('using p')}: {p}")
     res = minkowski_distance(p1, p2, p)
-    log.info(f"{Fore.BLUE}result{Fore.RESET}: {res:.5f}")
+    log.info(f"{blu('result')}: {res:.5f}")

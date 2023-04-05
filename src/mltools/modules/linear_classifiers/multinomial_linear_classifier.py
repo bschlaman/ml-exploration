@@ -4,11 +4,9 @@ import itertools
 import logging
 from abc import ABC, abstractmethod
 
-from colorama import Fore
-
-from linear_classifiers.data_generator import data_iter
-from utils.math.vectors import Vector
-from utils.printing import data_print
+from mltools.modules.linear_classifiers.data_generator import data_iter
+from mltools.utils.formatting import std
+from mltools.utils.math.vectors import Vector
 
 log = logging.getLogger(__name__)
 
@@ -64,7 +62,7 @@ class MultinomialLinearClassifier(ABC):
             "P(y = true)": self.label_weights[True],
             "P(y = false)": self.label_weights[False],
         }
-        for line in data_print(labeled_data, Fore.YELLOW):
+        for line in std.data_print(labeled_data):
             log.info(line)
 
     def get_top_n_params(self, c: bool, n: int) -> list[tuple[float, str]]:

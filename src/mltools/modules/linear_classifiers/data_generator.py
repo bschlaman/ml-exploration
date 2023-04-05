@@ -2,7 +2,8 @@ import collections
 import logging
 import random
 from typing import Generator, Iterable
-from utils.data import data_load
+
+from mltools.utils.data import data_load
 
 log = logging.getLogger(__name__)
 

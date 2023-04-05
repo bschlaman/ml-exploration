@@ -2,8 +2,8 @@ import logging
 
 from colorama import Fore
 
-from utils.printing import data_print
-from utils.math.vectors import Vector2D
+from mltools.utils.formatting import std
+from mltools.utils.math.vectors import Vector2D
 
 log = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ def perceptron2D():
                 "want": label,
                 "got": w.dot_product(vec),
             }
-            for line in data_print(labeled_data, Fore.BLUE):
+            for line in std.data_print(labeled_data):
                 log.info(line)
             if label * w.dot_product(vec) <= 0:
                 misses += 1

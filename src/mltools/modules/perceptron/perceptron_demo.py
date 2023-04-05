@@ -9,7 +9,6 @@ import numpy as np
 from colorama import Fore
 from matplotlib import pyplot as plt
 from matplotlib.patches import Circle
-
 from utils.helpers import data_print
 from utils.math.vectors import Vector
 
@@ -164,7 +163,6 @@ import random
 import time
 
 from colorama import Fore
-
 from utils.helpers import data_print
 
 LABEL_SPACE = (-1, 1)

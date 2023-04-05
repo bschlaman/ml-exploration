@@ -1,10 +1,10 @@
-from abc import ABC
 import logging
 import sys
+from abc import ABC
 
 import torch
 
-from utils.data import data_load
+from mltools.utils.data import data_load
 
 log = logging.getLogger(__name__)
 

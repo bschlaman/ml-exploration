@@ -2,9 +2,7 @@ import logging
 import random
 from statistics import mean
 
-from colorama import Fore
-
-from utils.helpers import compact_repr, data_print
+from mltools.utils.formatting import std
 
 log = logging.getLogger(__name__)
 
@@ -25,16 +23,16 @@ def lln_convergence():
         "distribution": distribution,
         "target delta": target_delta,
     }
-    for line in data_print(labeled_data, Fore.YELLOW):
+    for line in std.data_print(labeled_data):
         log.info(line)
     while abs(ev - mean(outcomes or [float("inf")])) > target_delta:
         outcomes.append(random.choice(distribution))
         labeled_data = {
             "expected val": ev,
-            "outcomes": compact_repr(outcomes),
+            "outcomes": std.compact_repr(outcomes),
             "outcomes (mean)": mean(outcomes),
             "delta": abs(ev - mean(outcomes)),
         }
-        for line in data_print(labeled_data, Fore.BLUE):
+        for line in std.data_print(labeled_data):
             log.info(line)
         input("press a key to continue")

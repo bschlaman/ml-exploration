@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 
-from utils.printing import compact_repr
+from mltools.utils.formatting import std
 
 
 class Vector:
@@ -19,7 +19,7 @@ class Vector:
         self.__dict__["components"] = list(components)
 
     def __str__(self):
-        return compact_repr(self.components)
+        return std.compact_repr(self.components)
 
     def magnitude(self):
         return math.sqrt(sum(map(lambda _: _**2, self.components)))

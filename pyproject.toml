@@ -5,10 +5,11 @@ requires-python = ">=3.9"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = [
-    "colorama==0.4.6",
-    "prettytable==3.6.0",
-    "torch==2.0.0",
-    "numpy==1.24.2",
+    "colorama",
+    "prettytable",
+    "torch",
+    "numpy",
+    "pandas", # can this be removed?
 ]
 
 [build-system]
@@ -16,11 +17,11 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project.optional-dependencies]
-dev = ["black", "isort", "flake8"]
+dev = ["black", "isort", "flake8", "ipython"]
 
 [tool.pyright]
 include = ["src"]
 pythonPlatform = "Linux"
 
 [project.scripts]
-ml = "src.ml:main"
+mltools = "mltools.cli.cli:main"

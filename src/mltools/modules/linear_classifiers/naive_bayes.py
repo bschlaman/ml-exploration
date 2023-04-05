@@ -2,9 +2,9 @@ import collections
 import logging
 import random
 
-from linear_classifiers.multinomial_linear_classifier import \
+from mltools.modules.linear_classifiers.multinomial_linear_classifier import \
     MultinomialLinearClassifier
-from utils.printing import mag
+from mltools.utils.formatting.colors import mag
 
 log = logging.getLogger(__name__)
 
