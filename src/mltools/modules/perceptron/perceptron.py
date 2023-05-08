@@ -1,8 +1,7 @@
 import logging
 
-from colorama import Fore
+from bpyutils.formatting import std
 
-from mltools.utils.formatting import std
 from mltools.utils.math.vectors import Vector2D
 
 log = logging.getLogger(__name__)

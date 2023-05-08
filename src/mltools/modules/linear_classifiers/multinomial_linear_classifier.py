@@ -4,8 +4,9 @@ import itertools
 import logging
 from abc import ABC, abstractmethod
 
+from bpyutils.formatting import std
+
 from mltools.modules.linear_classifiers.data_generator import data_iter
-from mltools.utils.formatting import std
 from mltools.utils.math.vectors import Vector
 
 log = logging.getLogger(__name__)

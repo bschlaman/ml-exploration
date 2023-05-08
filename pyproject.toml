@@ -10,6 +10,7 @@ dependencies = [
     "torch",
     "numpy",
     "pandas", # can this be removed?
+    "bpyutils @ git+https://github.com/bschlaman/bpy-utils.git",
 ]
 
 [build-system]

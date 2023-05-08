@@ -2,7 +2,7 @@ import logging
 import random
 from statistics import mean
 
-from mltools.utils.formatting import std
+from bpyutils.formatting import std
 
 log = logging.getLogger(__name__)
 

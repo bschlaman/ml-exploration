@@ -1,9 +1,10 @@
 import logging
 
+from bpyutils.formatting.colors import grn
+
 from mltools.modules.linear_classifiers.knn import MultinomialKNearestNeighbors
 from mltools.modules.linear_classifiers.naive_bayes import \
     MultinomialNaiveBayes
-from mltools.utils.formatting.colors import grn
 
 log = logging.getLogger(__name__)
 

@@ -4,8 +4,9 @@ from itertools import chain, combinations
 from math import sqrt
 from statistics import mean
 
-from mltools.utils.formatting import std
-from mltools.utils.formatting.colors import blu, yel
+from bpyutils.formatting import std
+from bpyutils.formatting.colors import blu, yel
+
 from mltools.utils.math.distance import euclidean_distance, minkowski_distance
 
 log = logging.getLogger(__name__)

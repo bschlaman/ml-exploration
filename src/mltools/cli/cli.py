@@ -2,7 +2,8 @@ import argparse
 import logging
 import random
 import textwrap
-import sys
+
+from bpyutils.formatting.colors import bld, blu, mag
 
 import mltools.modules.k_nearest_neighbors.knn
 import mltools.modules.law_large_numbers.lln
@@ -10,7 +11,6 @@ import mltools.modules.linear_classifiers
 import mltools.modules.perceptron.perceptron
 import mltools.modules.transformers
 from mltools.constants import RANDOM_SEED
-from mltools.utils.formatting.colors import bld, blu, mag
 
 logging.basicConfig(
     format="[%(levelname)-8s] (%(name)s) %(message)s",
