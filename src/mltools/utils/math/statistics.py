@@ -9,3 +9,6 @@ def choose(n: int, x: int) -> int:
     num_ordered_arrangements = math.factorial(n) / math.factorial(n - x)
     num_unordered_arrangements = num_ordered_arrangements // math.factorial(x)
     return int(num_unordered_arrangements)
+
+def standard_normal(μ: float, σ: float):
+    pass
