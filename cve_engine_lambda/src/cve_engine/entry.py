@@ -6,7 +6,8 @@ from datetime import datetime
 from pprint import pprint
 
 from cve_engine.cvss import CVSS_BASE_METRICS
-from cve_engine.engine import CVEEngineModel, desc_preprocess
+from cve_engine.engine import CVEEngineModel
+from cve_engine.data_processing import desc_preprocess
 
 logging.basicConfig(
     format="[%(levelname)-8s] (%(name)s) %(message)s",
