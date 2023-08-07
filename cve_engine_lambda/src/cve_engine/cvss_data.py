@@ -1,6 +1,7 @@
 from enum import Enum
 from dataclasses import dataclass
 
+CVSS_VERSION_STR = "CVSS:3.1"
 
 class CVSSMetricType(Enum):
     Exploit = "Exploit"
