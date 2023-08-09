@@ -195,7 +195,9 @@ class CVEEngineModel:
                     f"{metric}_model.pth",
                 ),
             )
-        with open("../bow_vec.pkl", "wb") as f:
+        with open(
+            os.path.join(self.model_save_dir, models_root_dir, "bow_vec.pkl"), "wb"
+        ) as f:
             pickle.dump(self.bow_vec, f)
 
     def load_models_full(self, models_root_dir: str):
