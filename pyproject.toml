@@ -11,6 +11,13 @@ dependencies = [
     "numpy",
     "pandas",
     "bpyutils @ git+https://github.com/bschlaman/bpy-utils.git",
+    "scipy",
+    "jupyter",
+    "scikit-learn",
+    "statsmodels",
+    "python-dotenv",
+    "matplotlib",
+    "seaborn",
 ]
 
 [build-system]
