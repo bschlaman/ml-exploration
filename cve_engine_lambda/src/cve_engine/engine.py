@@ -17,16 +17,20 @@ log = logging.getLogger(__name__)
 
 
 class CVEEngineModel:
+    """A stateful container for methods that create,
+    save, load, and train CVEEngine models.
+    """
     def __init__(self):
         # assume same learn rate for each metric
         self.learn_rate = 0.04
-        self.loss_fn = torch.nn.CrossEntropyLoss()
+        self.criterion = torch.nn.CrossEntropyLoss()
         self.training_epochs = 2000
 
         self.models = {}
         self.optimizers = {}
 
         self.model_save_dir = "../data/models/cve_engine"
+        self.ipex_optimized = False
 
     @staticmethod
     def _ensure_initialized(func):
@@ -43,7 +47,8 @@ class CVEEngineModel:
                 if not hasattr(self, attr) or not getattr(self, attr):
                     log.error(f"missing: {attr}")
                     raise ValueError(
-                        f"{self.__class__.__name__} must be initialized; call new_model or load"
+                        f"{self.__class__.__name__} must be initialized;"
+                        " call new_model or load"
                     )
             return func(self, *args, **kwargs)
 
@@ -82,6 +87,7 @@ class CVEEngineModel:
             f"feature dimensionality: {mag(list(self.models.values())[0].in_features)}"
         )
         print(f"epochs per metric:      {mag(str(self.training_epochs))}")
+        print(f"ipex optimized:         {bld(str(self.ipex_optimized))}")
         print()
 
     @_ensure_initialized
@@ -99,7 +105,7 @@ class CVEEngineModel:
             self.optimizers[metric].zero_grad()
             outputs = self.models[metric](X_train)
 
-            loss = self.loss_fn(outputs, Y_train)
+            loss = self.criterion(outputs, Y_train)
             loss.backward()
 
             self.writer.add_scalar(f"Loss/train/{metric}", loss, epoch)
@@ -126,6 +132,8 @@ class CVEEngineModel:
         """
         self._validate_Y_properties(Y_train)
         X_train = self.preprocess_examples(X_train_np)
+        # TODO: is there a better place for this?
+        if self.ipex_optimized: X_train.to("xpu")
 
         for i, metric in enumerate(self.models.keys()):
             log.debug(f"++ training metric {i}: {metric}")
@@ -195,9 +203,7 @@ class CVEEngineModel:
                     f"{metric}_model.pth",
                 ),
             )
-        with open(
-            os.path.join(self.model_save_dir, models_root_dir, "bow_vec.pkl"), "wb"
-        ) as f:
+        with open(os.path.join(dir_path, "bow_vec.pkl"), "wb") as f:
             pickle.dump(self.bow_vec, f)
 
     def load_models_full(self, models_root_dir: str):
@@ -217,3 +223,40 @@ class CVEEngineModel:
             self.models.keys() == CVSS_BASE_METRICS.keys()
         ), "should be no leftover metric keys"
         assert len(self.bow_vec.vocabulary_) > 0, "bow_vec should be valid"
+
+    @_ensure_initialized
+    def optimize_intel_ipex(self):
+        """
+        Attempt to optimize models for GPU training and inference
+        using intel's ipex libraries.
+        There are indeed many ways this can go wrong.
+
+        The best documentation I can find is here:
+        https://intel.github.io/intel-extension-for-pytorch/xpu/latest/tutorials/examples.html#complete-float32-example
+
+        Note that I do not store training data in this class,
+        so it assumes that the tensors passed in have also been
+        transformed via torch.tensor.to("xpu").
+        TODO: Is there is a programmatic way to enforce this?
+        """
+
+        try:
+            import intel_extension_for_pytorch as ipex
+        except ImportError:
+            log.error("could not import ibex")
+            raise
+
+        # first, optimize the criterion
+        self.criterion.to("xpu")
+
+        # then, optimize each model, passing in the optimizers
+        for metric, model in self.models.items():
+            log.debug(f"optimizing with ipex: {metric}")
+            model.to("xpu")
+            self.models[metric], _ = ipex.optimize(
+                model, optimizer=self.optimizers[metric]
+            )
+
+        assert self.models.keys() == self.optimizers.keys()
+
+        self.ipex_optimized = True
