@@ -1,2 +1,6 @@
 colorama==0.4.6
 types-colorama==0.4.15.8
+cvss
+torch
+matplotlib
+scipy
