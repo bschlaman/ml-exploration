@@ -11,6 +11,9 @@ log = logging.getLogger(__name__)
 def desc_preprocess(d: str):
     log.debug("preprocessing description...")
     # setup
+    log.debug("downloading nltk resources...")
+    nltk.download("stopwords")
+    nltk.download("wordnet")
     stopwords = set(nltk.corpus.stopwords.words("english"))
     lemmatizer = nltk.stem.WordNetLemmatizer()
 

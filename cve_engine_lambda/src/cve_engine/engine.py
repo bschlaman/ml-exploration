@@ -4,6 +4,7 @@ import numpy as np
 import os
 import logging
 from datetime import datetime
+import time
 
 import torch
 from torch.utils.tensorboard.writer import SummaryWriter
@@ -22,7 +23,7 @@ class CVEEngineModel:
     """
     def __init__(self):
         # assume same learn rate for each metric
-        self.learn_rate = 0.04
+        self.learn_rate = 0.1
         self.criterion = torch.nn.CrossEntropyLoss()
         self.training_epochs = 2000
 
@@ -31,6 +32,8 @@ class CVEEngineModel:
 
         self.model_save_dir = "../data/models/cve_engine"
         self.ipex_optimized = False
+        # toggle this parameter to switch off cuda
+        self.cuda_enabled = torch.cuda.is_available()
 
     @staticmethod
     def _ensure_initialized(func):
@@ -88,6 +91,8 @@ class CVEEngineModel:
         )
         print(f"epochs per metric:      {mag(str(self.training_epochs))}")
         print(f"ipex optimized:         {bld(str(self.ipex_optimized))}")
+        print(f"cuda available:         {bld(str(torch.cuda.is_available()))}")
+        print(f"cuda enabled:           {bld(str(self.cuda_enabled))}")
         print()
 
     @_ensure_initialized
@@ -101,6 +106,7 @@ class CVEEngineModel:
 
     @_ensure_initialized
     def _train_metric(self, X_train: torch.Tensor, Y_train: torch.Tensor, metric: str):
+        start_time = time.perf_counter()
         for epoch in range(self.training_epochs):
             self.optimizers[metric].zero_grad()
             outputs = self.models[metric](X_train)
@@ -114,12 +120,14 @@ class CVEEngineModel:
 
             if epoch % 100:
                 continue
-            log.debug(f"metric: {metric:2}\tepoch: {epoch:3}\tloss: {loss}")
+            time_elapsed = time.perf_counter() - start_time
+            log.debug(f"metric: {metric:2}\tepoch: {epoch:3}\tloss: {loss:0.5}\telapsed: {time_elapsed:0.4}")
 
     @_ensure_initialized
     def preprocess_examples(self, X_np: np.ndarray) -> torch.Tensor:
         """Vectorize examples and convert to torch.Tensor"""
         log.debug("transforming training examples...")
+        # vectorized = self.bow_vec.transform(X_np).toarray()
         vectorized = self.bow_vec.transform(X_np).toarray()
         return torch.from_numpy(vectorized).float()
 
@@ -133,7 +141,19 @@ class CVEEngineModel:
         self._validate_Y_properties(Y_train)
         X_train = self.preprocess_examples(X_train_np)
         # TODO: is there a better place for this?
-        if self.ipex_optimized: X_train.to("xpu")
+        if self.ipex_optimized:
+            X_train = X_train.to("xpu")
+            Y_train = Y_train.to("xpu")
+
+        if self.cuda_enabled:
+            log.debug("cuda enabled; moving data + models and re-initializing optimizers")
+            X_train = X_train.to("cuda")
+            Y_train = Y_train.to("cuda")
+            for metric, model in self.models.items():
+                model.to("cuda")
+                self.optimizers[metric] = torch.optim.SGD(
+                    model.parameters(), lr=self.learn_rate
+                )
 
         for i, metric in enumerate(self.models.keys()):
             log.debug(f"++ training metric {i}: {metric}")
@@ -148,6 +168,9 @@ class CVEEngineModel:
         indexed by cvss metric"""
 
         X = self.preprocess_examples(X_test_np)
+        if self.cuda_enabled:
+            log.debug("cuda enabled; moving data")
+            X = X.to("cuda")
 
         predictions = np.zeros((X.shape[0], len(self.models)))
         confidence_scores = np.zeros((X.shape[0], len(self.models)))
@@ -160,8 +183,8 @@ class CVEEngineModel:
 
             confidence = prob[range(prob.shape[0]), pred]
 
-            predictions[:, i] = pred.numpy()
-            confidence_scores[:, i] = confidence.detach().numpy()
+            predictions[:, i] = pred.cpu().numpy()
+            confidence_scores[:, i] = confidence.cpu().detach().numpy()
 
         assert predictions.shape == confidence_scores.shape
         return predictions, confidence_scores
@@ -246,7 +269,7 @@ class CVEEngineModel:
             log.error("could not import ibex")
             raise
 
-        # first, optimize the criterion
+        # first, optimize the criterion (this might not actually be necessary?)
         self.criterion.to("xpu")
 
         # then, optimize each model, passing in the optimizers
