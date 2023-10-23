@@ -120,13 +120,16 @@ def main():
     # compute X_train_np just so we can examine the shape;
     # the actual X_train will be constructed just before training
     bow_vec, X_train_np = create_bow(X_train_raw.to_list())
-    X_train_np.shape, Y_train.shape
+    print(f"{X_train_np.shape=}\t{Y_train.shape=}")
 
     cvem = CVEEngineModel()
     cvem.new_model(bow_vec)
     cvem.display_parameters()
 
+    exit()
     if cvem.ipex_optimized:
         cvem.train_all(X_train_raw.to_numpy(), Y_train.to("xpu"))
     else:
         cvem.train_all(X_train_raw.to_numpy(), Y_train)
+
+if __name__ == "__main__": main()
