@@ -25,7 +25,7 @@ class CVEEngineModel:
         # assume same learn rate for each metric
         self.learn_rate = 0.1
         self.criterion = torch.nn.CrossEntropyLoss()
-        self.training_epochs = 2000
+        self.training_epochs = 4000
 
         self.models = {}
         self.optimizers = {}
@@ -122,6 +122,7 @@ class CVEEngineModel:
                 continue
             time_elapsed = time.perf_counter() - start_time
             log.debug(f"metric: {metric:2}\tepoch: {epoch:3}\tloss: {loss:0.5}\telapsed: {time_elapsed:0.4}")
+        log.debug(f"total time elapsed: {time.perf_counter() - start_time:0.5}")
 
     @_ensure_initialized
     def preprocess_examples(self, X_np: np.ndarray) -> torch.Tensor:
