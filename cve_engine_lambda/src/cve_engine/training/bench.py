@@ -132,4 +132,6 @@ def main():
     else:
         cvem.train_all(X_train_raw.to_numpy(), Y_train)
 
-if __name__ == "__main__": main()
+
+if __name__ == "__main__":
+    main()

@@ -8,6 +8,7 @@ import time
 
 import torch
 from torch.utils.tensorboard.writer import SummaryWriter
+from torch.utils.data import DataLoader, TensorDataset
 from sklearn.feature_extraction.text import CountVectorizer
 
 from bpyutils.formatting.colors import yel, red, mag, bld
@@ -21,9 +22,10 @@ class CVEEngineModel:
     """A stateful container for methods that create,
     save, load, and train CVEEngine models.
     """
+
     def __init__(self):
         # assume same learn rate for each metric
-        self.learn_rate = 0.1
+        self.learn_rate = 0.15
         self.criterion = torch.nn.CrossEntropyLoss()
         self.training_epochs = 4000
 
@@ -121,16 +123,122 @@ class CVEEngineModel:
             if epoch % 100:
                 continue
             time_elapsed = time.perf_counter() - start_time
-            log.debug(f"metric: {metric:2}\tepoch: {epoch:3}\tloss: {loss:0.5}\telapsed: {time_elapsed:0.4}")
-        log.debug(f"total time elapsed: {time.perf_counter() - start_time:0.5}")
+            log.debug(
+                f"metric: {metric:2}\tepoch: {epoch:4}\tloss: {loss:0.5}\telapsed: {time_elapsed:0.4}"
+            )
+        log.debug(
+            f"total training time metric {metric:2}: {time.perf_counter() - start_time:0.5}"
+        )
+
+    @_ensure_initialized
+    def _train_metric_v2(
+        self,
+        X_train: torch.Tensor,
+        Y_train: torch.Tensor,
+        X_test: torch.Tensor,
+        Y_test: torch.Tensor,
+        metric: str,
+    ):
+        """This version of `_train_metric` also tracks validation metric"""
+        start_time = time.perf_counter()
+
+        train_loader = DataLoader(
+            TensorDataset(X_train, Y_train), batch_size=32, shuffle=True
+        )
+        val_loader = DataLoader(TensorDataset(X_test, Y_test), batch_size=32)
+
+        for epoch in range(self.training_epochs):
+            self.models[metric].train()
+            train_losses = []
+            for X_batch, Y_batch in train_loader:
+                self.optimizers[metric].zero_grad()
+                outputs = self.models[metric](X_batch)
+                loss = self.criterion(outputs, Y_batch)
+                loss.backward()
+                self.optimizers[metric].step()
+                train_losses.append(loss.item())
+
+            avg_train_loss = sum(train_losses) / len(train_losses)
+            self.writer.add_scalar(f"Loss/train/{metric}", avg_train_loss, epoch)
+
+            # Validation
+            self.models[metric].eval()
+            with torch.no_grad():
+                val_losses = [
+                    self.criterion(self.models[metric](X), Y).item()
+                    for X, Y in val_loader
+                ]
+
+            avg_val_loss = sum(val_losses) / len(val_losses)
+            self.writer.add_scalar(f"Loss/val/{metric}", avg_val_loss, epoch)
+
+            if epoch % 100:
+                continue
+            time_elapsed = time.perf_counter() - start_time
+            log.debug(
+                f"metric: {metric:2}\tepoch: {epoch:4}\tloss: {avg_train_loss:0.5}\telapsed: {time_elapsed:0.4}"
+            )
+        log.debug(
+            f"total training time metric {metric:2}: {time.perf_counter() - start_time:0.5}"
+        )
 
     @_ensure_initialized
     def preprocess_examples(self, X_np: np.ndarray) -> torch.Tensor:
         """Vectorize examples and convert to torch.Tensor"""
         log.debug("transforming training examples...")
-        # vectorized = self.bow_vec.transform(X_np).toarray()
         vectorized = self.bow_vec.transform(X_np).toarray()
         return torch.from_numpy(vectorized).float()
+
+    @_ensure_initialized
+    def train_all_v2(
+        self,
+        X_train_np: np.ndarray,
+        Y_train: torch.Tensor,
+        X_test_np: np.ndarray,
+        Y_test: torch.Tensor,
+    ):
+        """Trains all models on the provided training data.
+        :param metric_labels: a map from CVSS metric metriciations
+                              to the Y_train torch.Tensor that is
+                              associated with X_train.
+        NOTE: this function does not work well.  Training is several orders of magnitude slower,
+        and while confidence intervals are much higher, prediction results are worse.
+        I suspect there is a bug in implementation.
+        """
+        self._validate_Y_properties(Y_train)
+        X_train = self.preprocess_examples(X_train_np)
+        X_test = self.preprocess_examples(X_test_np)
+
+        if self.ipex_optimized:
+            X_train = X_train.to("xpu")
+            Y_train = Y_train.to("xpu")
+            X_test = X_test.to("xpu")
+            Y_test = Y_test.to("xpu")
+
+        if self.cuda_enabled:
+            log.debug(
+                "cuda enabled; moving data + models and re-initializing optimizers"
+            )
+            X_train = X_train.to("cuda")
+            Y_train = Y_train.to("cuda")
+            X_test = X_test.to("cuda")
+            Y_test = Y_test.to("cuda")
+            for metric, model in self.models.items():
+                model.to("cuda")
+                self.optimizers[metric] = torch.optim.SGD(
+                    model.parameters(), lr=self.learn_rate
+                )
+
+        start_time = time.perf_counter()
+        for i, metric in enumerate(self.models.keys()):
+            log.debug(f"++ training metric {i}: {metric}")
+            self._train_metric_v2(X_train, Y_train[:, i], X_test, Y_test[:, i], metric)
+        log.info(
+            f"total training time all metrics: {time.perf_counter() - start_time:0.5}"
+        )
+
+        log.info("training complete; flushing writer")
+        self.writer.flush()
 
     @_ensure_initialized
     def train_all(self, X_train_np: np.ndarray, Y_train: torch.Tensor):
@@ -141,13 +249,16 @@ class CVEEngineModel:
         """
         self._validate_Y_properties(Y_train)
         X_train = self.preprocess_examples(X_train_np)
+
         # TODO: is there a better place for this?
         if self.ipex_optimized:
             X_train = X_train.to("xpu")
             Y_train = Y_train.to("xpu")
 
         if self.cuda_enabled:
-            log.debug("cuda enabled; moving data + models and re-initializing optimizers")
+            log.debug(
+                "cuda enabled; moving data + models and re-initializing optimizers"
+            )
             X_train = X_train.to("cuda")
             Y_train = Y_train.to("cuda")
             for metric, model in self.models.items():
@@ -156,9 +267,13 @@ class CVEEngineModel:
                     model.parameters(), lr=self.learn_rate
                 )
 
+        start_time = time.perf_counter()
         for i, metric in enumerate(self.models.keys()):
             log.debug(f"++ training metric {i}: {metric}")
             self._train_metric(X_train, Y_train[:, i], metric)
+        log.info(
+            f"total training time all metrics: {time.perf_counter() - start_time:0.5}"
+        )
 
         log.info("training complete; flushing writer")
         self.writer.flush()
