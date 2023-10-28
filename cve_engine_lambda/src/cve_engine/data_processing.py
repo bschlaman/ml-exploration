@@ -11,10 +11,19 @@ log = logging.getLogger(__name__)
 
 def desc_preprocess(d: str):
     log.debug("preprocessing description...")
+
     # setup
     log.debug("downloading nltk resources...")
-    nltk.download("stopwords")
-    nltk.download("wordnet")
+    # lambda location for nltk_data
+    nltk.data.path.append("/usr/local/share/nltk_data")
+    try:
+        nltk.data.find("corpora/stopwords")
+        # for some reason nltk doesn't unzip wordnet automatically
+        nltk.data.find("corpora/wordnet.zip")
+    except LookupError:
+        log.error(f"could not find nltk data!  check {__file__} for required data")
+        raise
+
     stopwords = set(nltk.corpus.stopwords.words("english"))
     lemmatizer = nltk.stem.WordNetLemmatizer()
 

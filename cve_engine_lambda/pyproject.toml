@@ -5,13 +5,14 @@ requires-python = ">=3.9"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = [
-    "colorama",
-    "prettytable",
+    "bpyutils @ git+https://github.com/bschlaman/bpy-utils.git",
+    "cvss",
+    "tensorboard",
+    "scikit-learn",
     "torch",
     "numpy",
-    "bpyutils @ git+https://github.com/bschlaman/bpy-utils.git",
     "nltk",
-    "cvss",
+    "prettytable",
 ]
 
 [build-system]

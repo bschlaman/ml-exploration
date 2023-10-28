@@ -32,7 +32,10 @@ class CVEEngineModel:
         self.models = {}
         self.optimizers = {}
 
-        self.model_save_dir = "../data/models/cve_engine"
+        # TODO (2023.10.28): the path must have preceding ".."
+        # if using this in a notebook; find a long term solution
+        # that works for all environments.
+        self.model_save_dir = "data/models/cve_engine"
         self.ipex_optimized = False
         # toggle this parameter to switch off cuda
         self.cuda_enabled = torch.cuda.is_available()
