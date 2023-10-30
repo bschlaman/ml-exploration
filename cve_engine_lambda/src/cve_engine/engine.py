@@ -355,7 +355,10 @@ class CVEEngineModel:
             self.models[metric] = torch.load(
                 os.path.join(
                     self.model_save_dir, models_root_dir, f"{metric}_model.pth"
-                )
+                ),
+                map_location=torch.device("cuda")
+                if self.cuda_enabled
+                else torch.device("cpu"),
             )
         with open(
             os.path.join(self.model_save_dir, models_root_dir, "bow_vec.pkl"), "rb"
