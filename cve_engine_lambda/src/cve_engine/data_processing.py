@@ -77,4 +77,4 @@ def clean_cvss_vector(vec: Union[str, float]) -> Union[str, float]:
 
 def create_bow(descs: list[str]) -> tuple[CountVectorizer, np.ndarray]:
     vectorizer = CountVectorizer()
-    return vectorizer, vectorizer.fit_transform(descs).toarray()
+    return vectorizer, vectorizer.fit_transform(descs)
